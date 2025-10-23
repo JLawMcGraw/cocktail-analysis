@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocktail Compatibility Analyzer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .upload-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .file-input-group {
+            margin-bottom: 20px;
+        }
+        .file-input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        button:hover:not(:disabled) { transform: translateY(-2px); }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc3545;
+        }
+        .info-message {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #17a2b8;
+        }
+        #results {
+            margin-top: 30px;
+        }
+        .category {
+            margin-bottom: 30px;
+        }
+        .category-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .perfect { background: #d4edda; color: #155724; }
+        .very-good { background: #fff3cd; color: #856404; }
+        .good { background: #d1ecf1; color: #0c5460; }
+        .recipe-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .recipe-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .recipe-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .recipe-details {
+            color: #666;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+        .missing {
+            color: #dc3545;
+            font-style: italic;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #667eea;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #333;
+        }
+        .modal-title {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .modal-section {
+            margin-bottom: 25px;
+        }
+        .modal-section-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-section-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+        .ingredient-list {
+            list-style: none;
+            padding: 0;
+        }
+        .ingredient-list li {
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .ingredient-list li:last-child {
+            border-bottom: none;
+        }
+        .ingredient-list li.have {
+            color: #28a745;
+        }
+        .ingredient-list li.have::before {
+            content: "✓ ";
+            font-weight: bold;
+        }
+        .ingredient-list li.missing {
+            color: #dc3545;
+        }
+        .ingredient-list li.missing::before {
+            content: "✗ ";
+            font-weight: bold;
+        }
+        .compatibility-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .search-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            color: white;
+            display: none;
+        }
+        .search-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .search-subtitle {
+            font-size: 1em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        .search-controls {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .search-controls select {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+        .search-btn {
+            padding: 12px 25px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-size: 1em;
+        }
+        .search-btn:hover {
+            transform: scale(1.05);
+        }
+        .search-response {
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        .search-response.active {
+            display: block;
+        }
+        .shopping-list-section {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            color: white;
+            display: none;
+        }
+        .shopping-list-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .shopping-item {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .shopping-item-name {
+            font-weight: bold;
+        }
+        .shopping-item-impact {
+            background: #28a745;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .file-status {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .file-status.success {
+            color: #28a745;
+        }
+        .file-status.error {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍹 Cocktail Compatibility Analyzer</h1>
+        <p class="subtitle">Upload your bar stock and recipe collection to see what you can make!</p>
+
+        <div class="upload-section">
+            <div class="file-input-group">
+                <label>📦 Bar Stock CSV:</label>
+                <input type="file" id="inventoryFile" accept=".csv">
+                <div id="inventoryStatus" class="file-status"></div>
+            </div>
+
+            <div class="file-input-group">
+                <label>📚 Recipe Collection CSV(s):</label>
+                <input type="file" id="recipeFile" accept=".csv" multiple>
+                <div id="recipeStatus" class="file-status"></div>
+            </div>
+
+            <button id="analyzeBtn" disabled>Analyze My Bar 🎯</button>
+        </div>
+
+        <div id="shoppingList" class="shopping-list-section"></div>
+
+        <div id="searchSection" class="search-section">
+            <div class="search-title">🔍 Find Drinks by Ingredient</div>
+            <div class="search-subtitle">Select an ingredient from your bar to find matching cocktails</div>
+
+            <div class="search-controls">
+                <select id="ingredientSelect">
+                    <option value="">-- Select an ingredient --</option>
+                </select>
+                <button id="searchBtn" class="search-btn">Find Drinks</button>
+            </div>
+
+            <div id="searchResponse" class="search-response"></div>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <div id="recipeModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" id="modalClose">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        // Application state
+        const APP = {
+            inventoryData: null,
+            recipeData: [],
+            currentInventory: null,
+            allResults: null
+        };
+
+        // DOM elements
+        const elements = {
+            inventoryInput: document.getElementById('inventoryFile'),
+            recipeInput: document.getElementById('recipeFile'),
+            inventoryStatus: document.getElementById('inventoryStatus'),
+            recipeStatus: document.getElementById('recipeStatus'),
+            analyzeBtn: document.getElementById('analyzeBtn'),
+            resultsDiv: document.getElementById('results'),
+            modal: document.getElementById('recipeModal'),
+            modalBody: document.getElementById('modalBody'),
+            modalClose: document.getElementById('modalClose'),
+            searchSection: document.getElementById('searchSection'),
+            ingredientSelect: document.getElementById('ingredientSelect'),
+            searchBtn: document.getElementById('searchBtn'),
+            searchResponse: document.getElementById('searchResponse'),
+            shoppingList: document.getElementById('shoppingList')
+        };
+
+        // Initialize event listeners
+        function init() {
+            elements.inventoryInput.addEventListener('change', handleInventoryUpload);
+            elements.recipeInput.addEventListener('change', handleRecipeUpload);
+            elements.analyzeBtn.addEventListener('click', analyze);
+            elements.modalClose.addEventListener('click', closeModal);
+            elements.modal.addEventListener('click', handleModalClick);
+            elements.searchBtn.addEventListener('click', handleSearch);
+        }
+
+        // Handle inventory file upload
+        function handleInventoryUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            elements.inventoryStatus.textContent = 'Loading...';
+            elements.inventoryStatus.className = 'file-status';
+
+            Papa.parse(file, {
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    if (results.errors.length > 0) {
+                        showError('Error parsing inventory file: ' + results.errors[0].message);
+                        elements.inventoryStatus.textContent = '❌ Error loading file';
+                        elements.inventoryStatus.className = 'file-status error';
+                        return;
+                    }
+
+                    // Validate CSV structure
+                    if (!results.data || results.data.length === 0) {
+                        showError('Inventory file is empty');
+                        elements.inventoryStatus.textContent = '❌ File is empty';
+                        elements.inventoryStatus.className = 'file-status error';
+                        return;
+                    }
+
+                    const firstRow = results.data[0];
+                    if (!firstRow.Name || firstRow['Stock Number'] === undefined) {
+                        showError('Inventory CSV must have "Name" and "Stock Number" columns');
+                        elements.inventoryStatus.textContent = '❌ Invalid format';
+                        elements.inventoryStatus.className = 'file-status error';
+                        return;
+                    }
+
+                    APP.inventoryData = results.data;
+                    elements.inventoryStatus.textContent = '✓ Loaded ' + results.data.filter(item => item['Stock Number'] > 0).length + ' items in stock';
+                    elements.inventoryStatus.className = 'file-status success';
+                    checkReady();
+                },
+                error: function(error) {
+                    showError('Failed to read inventory file: ' + error.message);
+                    elements.inventoryStatus.textContent = '❌ Error loading file';
+                    elements.inventoryStatus.className = 'file-status error';
+                }
+            });
+        }
+
+        // Handle recipe file upload
+        function handleRecipeUpload(e) {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+
+            APP.recipeData = [];
+            let filesProcessed = 0;
+            let totalRecipes = 0;
+            let hasErrors = false;
+
+            elements.recipeStatus.textContent = 'Loading ' + files.length + ' file(s)...';
+            elements.recipeStatus.className = 'file-status';
+
+            files.forEach(function(file) {
+                Papa.parse(file, {
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        if (results.errors.length > 0) {
+                            console.error('Error parsing ' + file.name + ':', results.errors);
+                            hasErrors = true;
+                        }
+
+                        // Validate CSV structure
+                        if (results.data && results.data.length > 0) {
+                            const firstRow = results.data[0];
+                            if (!firstRow['Drink Name'] || !firstRow.Ingredients) {
+                                console.error('Invalid recipe file format:', file.name);
+                                hasErrors = true;
+                            } else {
+                                APP.recipeData = APP.recipeData.concat(results.data);
+                                totalRecipes += results.data.length;
+                            }
+                        }
+
+                        filesProcessed++;
+
+                        if (filesProcessed === files.length) {
+                            if (hasErrors) {
+                                elements.recipeStatus.textContent = '⚠ Loaded ' + totalRecipes + ' recipes (some files had errors)';
+                                elements.recipeStatus.className = 'file-status error';
+                            } else {
+                                elements.recipeStatus.textContent = '✓ Loaded ' + totalRecipes + ' recipes from ' + files.length + ' file(s)';
+                                elements.recipeStatus.className = 'file-status success';
+                            }
+                            checkReady();
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Failed to read ' + file.name + ':', error);
+                        hasErrors = true;
+                        filesProcessed++;
+
+                        if (filesProcessed === files.length) {
+                            elements.recipeStatus.textContent = '❌ Error loading recipe files';
+                            elements.recipeStatus.className = 'file-status error';
+                        }
+                    }
+                });
+            });
+        }
+
+        // Check if ready to analyze
+        function checkReady() {
+            if (APP.inventoryData && APP.recipeData.length > 0) {
+                elements.analyzeBtn.disabled = false;
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+
+            elements.resultsDiv.innerHTML = '';
+            elements.resultsDiv.appendChild(errorDiv);
+        }
+
+        // Main analysis function
+        function analyze() {
+            elements.resultsDiv.innerHTML = '<div class="loading">🔍 Analyzing your bar...</div>';
+
+            setTimeout(function() {
+                try {
+                    const results = runAnalysis(APP.inventoryData, APP.recipeData);
+                    displayResults(results);
+                    generateShoppingList(results);
+                    setupSearch();
+                    elements.searchSection.style.display = 'block';
+                } catch (error) {
+                    showError('Analysis failed: ' + error.message);
+                    console.error('Analysis error:', error);
+                }
+            }, 300);
+        }
+
+        // Create ingredient aliases mapping
+        function createAliasMap(inventory) {
+            const inv = new Map();
+
+            inventory.filter(item => item['Stock Number'] > 0).forEach(function(item) {
+                const name = item.Name.toLowerCase();
+                inv.set(name, true);
+
+                // Add aliases for common ingredient variations
+                addAliases(inv, name);
+            });
+
+            // Common ingredients assumed available
+            const commonItems = ['ice', 'crushed ice', 'ice cubes', 'sugar', 'water', 'salt', 'mint', 'fresh mint'];
+            commonItems.forEach(item => inv.set(item, true));
+
+            return inv;
+        }
+
+        // Add ingredient aliases
+        function addAliases(inv, name) {
+            // Rum aliases
+            if (name.includes('cruzan single barrel')) {
+                ['aged rum', 'gold rum', 'virgin islands rum', 'gold virgin islands rum',
+                 'dark rum', 'aged virgin islands rum', 'gold barbados rum'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('cruzan 151')) {
+                ['151-proof caribbean rum', 'amber 151-proof rum', '151-proof rum'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('cruzan') && name.includes('light')) {
+                ['light rum', 'light puerto rican rum', 'light virgin islands rum', 'white rum'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('hamilton 86')) {
+                ['gold rum', 'demerara rum', 'gold puerto rican rum', '86-proof demerara rum'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('hamilton jamaican')) {
+                ['dark jamaican rum', 'dark rum', 'jamaican rum'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('hamilton 151')) {
+                ['lemon hart 151', 'lemon hart 151-proof demerara rum', '151-proof demerara rum'].forEach(alias => inv.set(alias, true));
+            }
+
+            // Liqueur aliases
+            if (name.includes('curaçao') || name.includes('curacao')) {
+                ['orange curacao', 'orange curaçao'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('banana')) {
+                ['creme de banana', 'banana liqueur', 'crème de banane'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('raspberry')) {
+                ['raspberry liqueur', 'raspberry syrup'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('blackberry')) {
+                ['blackberry brandy', 'blackberry liqueur'].forEach(alias => inv.set(alias, true));
+            }
+
+            // Syrup aliases
+            if (name.includes('simple syrup') || name.includes('sugar syrup')) {
+                ['simple syrup', 'sugar syrup', 'rock candy syrup'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('orgeat')) {
+                ['orgeat syrup', 'orgeat'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('grenadine')) {
+                inv.set('grenadine', true);
+            }
+            if (name.includes('demerara') && name.includes('syrup')) {
+                ['demerara sugar syrup', 'demerara syrup'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('falernum')) {
+                ['falernum', 'velvet falernum'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('passion') && name.includes('syrup')) {
+                ['passion fruit syrup', 'passionfruit syrup'].forEach(alias => inv.set(alias, true));
+            }
+
+            // Juice aliases
+            if (name.includes('lime') && !name.includes('sublime')) {
+                ['lime juice', 'fresh lime juice'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('lemon') && name.includes('juice')) {
+                ['lemon juice', 'fresh lemon juice'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('pineapple')) {
+                ['pineapple juice', 'unsweetened pineapple juice'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('orange') && name.includes('juice')) {
+                ['orange juice', 'fresh orange juice'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('grapefruit')) {
+                ['grapefruit juice', 'fresh grapefruit juice'].forEach(alias => inv.set(alias, true));
+            }
+
+            // Bitters aliases
+            if (name.includes('angostura')) {
+                inv.set('angostura bitters', true);
+            }
+
+            // Mixer aliases
+            if (name.includes('ginger beer')) {
+                ['ginger beer', 'chilled ginger beer'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('sparkling water') || name.includes('club soda') || name.includes('soda water')) {
+                ['club soda', 'soda water', 'chilled club soda', 'sparkling water'].forEach(alias => inv.set(alias, true));
+            }
+            if (name.includes('pernod')) {
+                inv.set('pernod', true);
+            }
+            if (name.includes('absinthe')) {
+                ['absinthe', 'pernod'].forEach(alias => inv.set(alias, true));
+            }
+        }
+
+        // Normalize ingredient name for matching
+        function normalizeIngredient(ingredientLine) {
+            return ingredientLine.toLowerCase()
+                .replace(/^\d+[\s\/]*\d*[\s\/]*\d*\s*/, '') // Remove measurements
+                .replace(/ounces?|oz|teaspoons?|tsp|tablespoons?|tbsp|dash(es)?|drops?|cups?|ml|cl/gi, '')
+                .replace(/fresh|chilled|cold|room temperature|hot/gi, '')
+                .trim();
+        }
+
+        // Check if ingredient is in inventory
+        function hasIngredient(ingredientLine, inventory) {
+            // Skip garnish items
+            if (ingredientLine.toLowerCase().includes('garnish')) {
+                return true;
+            }
+
+            const normalized = normalizeIngredient(ingredientLine);
+
+            // Direct match
+            if (inventory.has(normalized)) {
+                return true;
+            }
+
+            // Partial match (ingredient contains or is contained by inventory item)
+            for (const [invItem] of inventory) {
+                if (normalized.includes(invItem) || invItem.includes(normalized)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Main analysis logic
+        function runAnalysis(inventory, recipes) {
+            const inv = createAliasMap(inventory);
+            APP.currentInventory = inv;
+
+            const results = { perfect: [], veryGood: [], good: [] };
+
+            recipes.forEach(function(recipe) {
+                if (!recipe.Ingredients || !recipe['Drink Name']) return;
+
+                const lines = recipe.Ingredients.split('\n').filter(l => l.trim());
+                let matches = 0;
+                const missing = [];
+                const matched = [];
+
+                lines.forEach(function(line) {
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine) return;
+
+                    if (hasIngredient(trimmedLine, inv)) {
+                        matches++;
+                        matched.push(trimmedLine);
+                    } else {
+                        missing.push(trimmedLine);
+                    }
+                });
+
+                const total = matches + missing.length;
+                const compatibility = total > 0 ? Math.round((matches / total) * 100) : 0;
+
+                const analysis = {
+                    name: recipe['Drink Name'],
+                    compatibility: compatibility,
+                    matches: matches,
+                    total: total,
+                    missing: missing,
+                    matched: matched,
+                    fullRecipe: recipe
+                };
+
+                if (compatibility === 100) {
+                    results.perfect.push(analysis);
+                } else if (compatibility >= 80) {
+                    results.veryGood.push(analysis);
+                } else if (compatibility >= 60) {
+                    results.good.push(analysis);
+                }
+            });
+
+            APP.allResults = results;
+            return results;
+        }
+
+        // Display results
+        function displayResults(results) {
+            const total = results.perfect.length + results.veryGood.length + results.good.length;
+
+            let html = '<div class="stats">';
+            html += '<div class="stat-card"><div class="stat-number">' + results.perfect.length + '</div><div class="stat-label">Perfect Matches</div></div>';
+            html += '<div class="stat-card"><div class="stat-number">' + results.veryGood.length + '</div><div class="stat-label">Very Good</div></div>';
+            html += '<div class="stat-card"><div class="stat-number">' + total + '</div><div class="stat-label">Total Makeable</div></div>';
+            html += '</div>';
+
+            if (results.perfect.length > 0) {
+                html += '<div class="category"><div class="category-title perfect">🟢 Perfect Matches (' + results.perfect.length + ')</div>';
+                results.perfect.forEach(function(r, index) {
+                    html += createRecipeCard(r, 'perfect', index);
+                });
+                html += '</div>';
+            }
+
+            if (results.veryGood.length > 0) {
+                const displayCount = Math.min(results.veryGood.length, 20);
+                html += '<div class="category"><div class="category-title very-good">🟡 Very Good Matches (' + results.veryGood.length + ')</div>';
+                results.veryGood.slice(0, displayCount).forEach(function(r, index) {
+                    html += createRecipeCard(r, 'veryGood', index);
+                });
+                if (results.veryGood.length > displayCount) {
+                    html += '<div class="info-message">Showing ' + displayCount + ' of ' + results.veryGood.length + ' recipes</div>';
+                }
+                html += '</div>';
+            }
+
+            if (results.good.length > 0) {
+                const displayCount = Math.min(results.good.length, 10);
+                html += '<div class="category"><div class="category-title good">🔵 Good Matches (' + results.good.length + ')</div>';
+                results.good.slice(0, displayCount).forEach(function(r, index) {
+                    html += createRecipeCard(r, 'good', index);
+                });
+                if (results.good.length > displayCount) {
+                    html += '<div class="info-message">Showing ' + displayCount + ' of ' + results.good.length + ' recipes</div>';
+                }
+                html += '</div>';
+            }
+
+            if (total === 0) {
+                html += '<div class="info-message">No matching recipes found. Try adding more ingredients to your bar stock!</div>';
+            }
+
+            elements.resultsDiv.innerHTML = html;
+
+            // Add click handlers
+            document.querySelectorAll('.recipe-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    const category = this.dataset.category;
+                    const index = parseInt(this.dataset.index);
+                    showRecipe(category, index);
+                });
+            });
+        }
+
+        // Create recipe card HTML
+        function createRecipeCard(recipe, category, index) {
+            const missingText = recipe.missing.length === 0 ? 'You have everything!' :
+                              recipe.missing.length <= 2 ? 'Missing: ' + recipe.missing.join(', ') :
+                              'Missing: ' + recipe.missing.length + ' items';
+
+            return '<div class="recipe-item" data-category="' + category + '" data-index="' + index + '">' +
+                   '<div class="recipe-name">' + escapeHtml(recipe.name) + '</div>' +
+                   '<div class="recipe-details">' + recipe.compatibility + '% - ' +
+                   (recipe.missing.length > 0 ? '<span class="missing">' + escapeHtml(missingText) + '</span>' : missingText) +
+                   '</div></div>';
+        }
+
+        // Show recipe modal
+        function showRecipe(category, index) {
+            const recipe = APP.allResults[category][index];
+            if (!recipe) return;
+
+            let html = '<div class="modal-title">' + escapeHtml(recipe.name) + '</div>';
+            html += '<div class="compatibility-badge">' + recipe.compatibility + '% Compatible</div>';
+            html += '<div class="modal-section"><div class="modal-section-title">📋 Ingredients</div>';
+            html += '<div class="modal-section-content"><ul class="ingredient-list">';
+
+            recipe.fullRecipe.Ingredients.split('\n').forEach(function(line) {
+                const trimmedLine = line.trim();
+                if (trimmedLine) {
+                    const hasIt = recipe.matched.some(m => m === trimmedLine);
+                    const className = hasIt ? 'have' : 'missing';
+                    html += '<li class="' + className + '">' + escapeHtml(trimmedLine) + '</li>';
+                }
+            });
+
+            html += '</ul></div></div>';
+
+            if (recipe.fullRecipe.Instructions) {
+                html += '<div class="modal-section"><div class="modal-section-title">🔨 Instructions</div>';
+                html += '<div class="modal-section-content">' + escapeHtml(recipe.fullRecipe.Instructions) + '</div></div>';
+            }
+
+            if (recipe.fullRecipe.Glass) {
+                html += '<div class="modal-section"><div class="modal-section-title">🥃 Glass</div>';
+                html += '<div class="modal-section-content">' + escapeHtml(recipe.fullRecipe.Glass) + '</div></div>';
+            }
+
+            elements.modalBody.innerHTML = html;
+            elements.modal.classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            elements.modal.classList.remove('active');
+        }
+
+        // Handle modal background click
+        function handleModalClick(e) {
+            if (e.target === elements.modal) {
+                closeModal();
+            }
+        }
+
+        // Generate shopping list
+        function generateShoppingList(results) {
+            const missing = {};
+
+            results.veryGood.concat(results.good).forEach(function(recipe) {
+                recipe.missing.forEach(function(ingredient) {
+                    const cleaned = normalizeIngredient(ingredient);
+
+                    if (cleaned && !cleaned.includes('ice') && !cleaned.includes('garnish')) {
+                        if (!missing[cleaned]) {
+                            missing[cleaned] = { count: 0, recipes: [] };
+                        }
+                        missing[cleaned].count++;
+                        if (!missing[cleaned].recipes.includes(recipe.name)) {
+                            missing[cleaned].recipes.push(recipe.name);
+                        }
+                    }
+                });
+            });
+
+            const sorted = Object.keys(missing)
+                .map(key => [key, missing[key]])
+                .sort((a, b) => b[1].recipes.length - a[1].recipes.length);
+
+            if (sorted.length === 0) {
+                elements.shoppingList.style.display = 'none';
+                return;
+            }
+
+            let html = '<div class="shopping-list-title">🛒 Smart Shopping List</div>';
+            html += '<div style="margin-bottom: 20px; opacity: 0.95;">Top ingredients to unlock more recipes:</div>';
+
+            sorted.slice(0, 15).forEach(function(item) {
+                html += '<div class="shopping-item">';
+                html += '<div class="shopping-item-name">' + escapeHtml(item[0].charAt(0).toUpperCase() + item[0].slice(1)) + '</div>';
+                html += '<div class="shopping-item-impact">+' + item[1].recipes.length + ' recipe' + (item[1].recipes.length > 1 ? 's' : '') + '</div>';
+                html += '</div>';
+            });
+
+            elements.shoppingList.innerHTML = html;
+            elements.shoppingList.style.display = 'block';
+        }
+
+        // Setup search functionality
+        function setupSearch() {
+            const ingredients = [];
+            APP.currentInventory.forEach(function(val, key) {
+                if (!['ice', 'crushed ice', 'ice cubes', 'water', 'salt'].includes(key)) {
+                    ingredients.push(key);
+                }
+            });
+            ingredients.sort();
+
+            elements.ingredientSelect.innerHTML = '<option value="">-- Select an ingredient --</option>';
+            ingredients.forEach(function(ing) {
+                const option = document.createElement('option');
+                option.value = ing;
+                option.textContent = ing.charAt(0).toUpperCase() + ing.slice(1);
+                elements.ingredientSelect.appendChild(option);
+            });
+        }
+
+        // Handle ingredient search
+        function handleSearch() {
+            const selected = elements.ingredientSelect.value;
+            if (!selected) return;
+
+            const allRecipes = APP.allResults.perfect.concat(APP.allResults.veryGood, APP.allResults.good);
+            const matches = [];
+
+            allRecipes.forEach(function(recipe) {
+                const ingredients = recipe.fullRecipe.Ingredients.toLowerCase();
+                if (ingredients.includes(selected.toLowerCase())) {
+                    matches.push(recipe);
+                }
+            });
+
+            if (matches.length === 0) {
+                elements.searchResponse.innerHTML = '<div style="padding: 20px;">No cocktails found with <strong>' + escapeHtml(selected) + '</strong></div>';
+            } else {
+                let html = '<div style="font-weight: bold; margin-bottom: 15px;">Found ' + matches.length + ' cocktail' + (matches.length > 1 ? 's' : '') + ' with <strong>' + escapeHtml(selected) + '</strong>:</div>';
+
+                matches.slice(0, 15).forEach(function(recipe) {
+                    const category = APP.allResults.perfect.includes(recipe) ? 'perfect' :
+                                   APP.allResults.veryGood.includes(recipe) ? 'veryGood' : 'good';
+                    const index = APP.allResults[category].indexOf(recipe);
+
+                    html += createRecipeCard(recipe, category, index);
+                });
+
+                if (matches.length > 15) {
+                    html += '<div style="margin-top: 10px; font-style: italic;">Showing first 15 results</div>';
+                }
+
+                elements.searchResponse.innerHTML = html;
+
+                // Add click handlers
+                elements.searchResponse.querySelectorAll('.recipe-item').forEach(function(item) {
+                    item.addEventListener('click', function() {
+                        const category = this.dataset.category;
+                        const index = parseInt(this.dataset.index);
+                        showRecipe(category, index);
+                    });
+                });
+            }
+
+            elements.searchResponse.classList.add('active');
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>
