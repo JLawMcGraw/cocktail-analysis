@@ -7,6 +7,8 @@ A web application that helps you review your bar stock and match it to cocktail 
 - **Upload Bar Stock**: Import your ingredient inventory via CSV
 - **Upload Recipes**: Load one or multiple recipe collections
 - **Compatibility Analysis**: See which cocktails you can make with what you have
+- **Fuzzy Ingredient Matching**: Automatically handles spelling variations like "passionfruit" vs "passion fruit"
+- **AI-Powered Search**: Ask natural language questions and search by tasting notes using Claude AI
 - **Smart Shopping List**: Discover which ingredients would unlock the most new recipes
 - **Ingredient Search**: Find cocktails that use specific ingredients from your bar
 - **Detailed Recipe View**: See full instructions, ingredients, and what you're missing
@@ -17,6 +19,35 @@ A web application that helps you review your bar stock and match it to cocktail 
 2. Upload your bar stock CSV file (see format below)
 3. Upload your recipe CSV file(s) (see format below)
 4. Click "Analyze My Bar" to see results
+5. (Optional) Enter your Anthropic API key to use AI-powered search
+
+## AI-Powered Search
+
+The app now includes AI-powered cocktail recommendations using Claude! You can:
+
+- Ask questions in natural language ("What can I make that's refreshing?")
+- Search by tasting notes ("I have a funky, high-ester Jamaican rum")
+- Find cocktails for specific occasions ("Show me easy tiki drinks")
+- Get personalized recommendations based on flavor profiles
+
+### Setting Up AI Search
+
+1. Get an API key from [Anthropic's Console](https://console.anthropic.com/)
+2. After analyzing your bar, the AI search section will appear
+3. Click "Show/Hide" to reveal the API key input
+4. Enter your API key (it's saved in your browser's localStorage)
+5. Start asking questions!
+
+**Note**: Your API key is stored locally in your browser only. API calls are made directly from your browser to Anthropic.
+
+### AI Search Examples
+
+- "What cocktails can I make with a funky, high-ester Jamaican rum?"
+- "Recommend drinks for a hot summer day"
+- "What can I make with my Hamilton 86 that has notes of molasses and caramel?"
+- "Show me tiki drinks with tropical flavors"
+- "I want something citrus-forward and refreshing"
+- "What's the easiest cocktail I can make right now?"
 
 ## CSV File Formats
 
@@ -115,28 +146,41 @@ Sample files are included:
 
 ### Additional Improvements Made
 
-1. **Better garnish handling**: Automatically treats garnish items as "have"
-2. **Improved ingredient normalization**: Removes common modifiers like "fresh", "chilled"
-3. **Shopping list improvements**: Shows singular/plural correctly, better cleaning
-4. **Search improvements**: Shows result counts, handles edge cases
-5. **Recipe card creation**: Extracted into reusable function
-6. **CSS improvements**: Added file status styling, better error display
-7. **Display counts**: Shows total recipe counts in section headers
+1. **Fuzzy Ingredient Matching**: Implements Levenshtein distance algorithm to handle spelling variations
+   - Automatically matches "passionfruit" with "passion fruit"
+   - Handles spacing differences, punctuation, and minor typos
+   - Configurable similarity threshold (default 85-90%)
+
+2. **AI-Powered Search**: Integration with Anthropic's Claude API
+   - Natural language queries about cocktails
+   - Tasting note-based recommendations
+   - Considers user's available ingredients
+   - Provides ranked recommendations
+   - Secure API key storage in localStorage
+
+3. **Better garnish handling**: Automatically treats garnish items as "have"
+4. **Improved ingredient normalization**: Removes common modifiers like "fresh", "chilled"
+5. **Shopping list improvements**: Shows singular/plural correctly, better cleaning
+6. **Search improvements**: Shows result counts, handles edge cases
+7. **Recipe card creation**: Extracted into reusable function
+8. **CSS improvements**: Added file status styling, better error display, AI section styling
+9. **Display counts**: Shows total recipe counts in section headers
 
 ### Remaining Opportunities for Enhancement
 
 While the current version is much improved, here are potential future enhancements:
 
-1. **Fuzzy Matching**: Use string similarity algorithms for even better ingredient matching
-2. **Local Storage**: Save bar inventory and preferences between sessions
-3. **Export Results**: Download your makeable recipes list
-4. **Recipe Sorting**: Sort by compatibility, name, or ingredients needed
-5. **Ingredient Substitutions**: Suggest alternatives for missing ingredients
-6. **Mobile Optimization**: Better touch targets and responsive design
-7. **Dark Mode**: Theme toggle for different preferences
-8. **Recipe Filtering**: Filter by spirit type, glass, complexity
-9. **Batch Operations**: Mark multiple recipes as favorites
-10. **Print Stylesheet**: Print-friendly recipe cards
+1. ~~**Fuzzy Matching**: Use string similarity algorithms for even better ingredient matching~~ ✅ Implemented!
+2. ~~**AI-Powered Search**: Natural language queries and tasting note search~~ ✅ Implemented!
+3. **Local Storage**: Save bar inventory and recipe data between sessions
+4. **Export Results**: Download your makeable recipes list
+5. **Recipe Sorting**: Sort by compatibility, name, or ingredients needed
+6. **Ingredient Substitutions**: Suggest alternatives for missing ingredients
+7. **Mobile Optimization**: Better touch targets and responsive design
+8. **Dark Mode**: Theme toggle for different preferences
+9. **Recipe Filtering**: Filter by spirit type, glass, complexity
+10. **Batch Operations**: Mark multiple recipes as favorites
+11. **Print Stylesheet**: Print-friendly recipe cards
 
 ### Architecture Notes
 

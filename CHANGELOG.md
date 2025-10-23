@@ -2,6 +2,81 @@
 
 All notable changes and fixes to the Cocktail Compatibility Analyzer.
 
+## [3.0.0] - 2025-10-23
+
+### Major New Features
+
+#### 🔍 Fuzzy Ingredient Matching
+- **Implemented Levenshtein Distance Algorithm**: Automatically handles spelling variations
+- **Solves Common Issues**: "passionfruit" now matches "passion fruit", "curaçao" matches "curacao"
+- **Smart Normalization**: Removes spaces, punctuation, and special characters for matching
+- **Configurable Threshold**: 85-90% similarity threshold for reliable matching
+- **Fallback Matching**: Multi-level matching strategy (exact → partial → fuzzy)
+
+**Example Use Cases:**
+- "Passion fruit syrup" ↔ "Passionfruit syrup"
+- "Orange Curaçao" ↔ "Orange Curacao"
+- "Créme de banana" ↔ "Creme de banana"
+
+#### 🤖 AI-Powered Cocktail Search
+- **Natural Language Queries**: Ask questions in plain English
+- **Tasting Note Search**: Find cocktails based on flavor profiles
+- **Context-Aware**: AI knows your available ingredients and recipes
+- **Ranked Recommendations**: Get 3-5 best matches for your query
+- **Secure API Key Storage**: API key saved in browser's localStorage only
+
+**Features:**
+- Claude API integration using latest model (claude-3-5-sonnet-20241022)
+- Fuzzy recipe name matching for AI responses
+- Beautiful gradient UI design
+- Collapsible API key section
+- Example queries and usage tips
+- Loading states and error handling
+
+**Example Queries:**
+- "What cocktails can I make with a funky, high-ester Jamaican rum?"
+- "Show me refreshing drinks for summer"
+- "I want something citrus-forward"
+- "What can I make with Hamilton 86 that has molasses notes?"
+
+### Technical Improvements
+
+#### Fuzzy Matching Functions
+- `stringSimilarity()`: Calculates similarity score (0-1) between two strings
+- `levenshteinDistance()`: Classic edit distance algorithm implementation
+- `fuzzyNormalize()`: Removes non-alphanumeric characters for comparison
+- `areSimilarIngredients()`: High-level matching with configurable threshold
+- Integrated into `hasIngredient()` function for automatic use
+
+#### AI Integration
+- `loadApiKey()`: Loads API key from localStorage on init
+- `saveApiKey()`: Saves API key to localStorage on input
+- `toggleApiKeyVisibility()`: Shows/hides API key input
+- `handleAIQuery()`: Orchestrates AI query flow
+- `queryClaudeAPI()`: Makes API call to Anthropic
+- `displayAIRecommendations()`: Renders AI results with fuzzy matching
+
+### UI/UX Enhancements
+
+- New pink/purple gradient section for AI search
+- Collapsible API key input with status indicator
+- Example queries and usage tips
+- AI thinking state with emoji
+- Numbered recommendations display
+- API key status messages (saved/not saved)
+
+### Bug Fixes
+
+- Fixed "passionfruit" vs "passion fruit" matching issue
+- Improved alias system to be more comprehensive
+- Better handling of ingredient name variations
+
+### Sample Data Updates
+
+- Added "Passionfruit Syrup" to sample inventory (was 0, now 1)
+- Added "Hurricane" cocktail to sample recipes using "Passion Fruit Syrup"
+- Demonstrates fuzzy matching in action
+
 ## [2.0.0] - 2025-10-23
 
 ### Major Improvements
