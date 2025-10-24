@@ -1556,9 +1556,12 @@
 
                     <!-- Query Input -->
                     <div class="ai-query-section">
-                        <label for="aiQuery" style="font-weight: 600; margin-bottom: 12px; display: block;">
+                        <label for="aiQuery" style="font-weight: 600; margin-bottom: 8px; display: block;">
                             💬 Ask me anything about cocktails:
                         </label>
+                        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-bottom: 12px;">
+                            Press <strong>Enter</strong> to send • <strong>Shift+Enter</strong> for new line
+                        </p>
                         <textarea id="aiQuery" placeholder="Type your question here...
 
 Examples:
@@ -1691,6 +1694,14 @@ Examples:
             elements.apiKeyInput.addEventListener('input', saveApiKey);
             elements.aiQueryBtn.addEventListener('click', handleAIQuery);
             elements.clearConversationBtn.addEventListener('click', clearConversation);
+
+            // Allow Enter key to submit AI query (Shift+Enter for new line)
+            elements.aiQuery.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleAIQuery();
+                }
+            });
 
             // Setup backup/restore
             const exportDataBtn = document.getElementById('exportDataBtn');
