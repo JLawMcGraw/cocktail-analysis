@@ -6,73 +6,224 @@
     <title>Cocktail Compatibility Analyzer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-tertiary: #f3f4f6;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border: #e5e7eb;
+            --sidebar-width: 260px;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: var(--bg-secondary);
             min-height: 100vh;
-            padding: 20px;
+            color: var(--text-primary);
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+
+        /* App Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
         }
-        h1 {
-            color: #667eea;
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 2.5em;
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
         }
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 1.1em;
+
+        .sidebar-brand {
+            padding: 0 24px 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
         }
+
+        .sidebar-brand h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .sidebar-brand .tagline {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav-item {
+            padding: 0 16px;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            transition: all 0.15s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sidebar-nav-link:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .sidebar-nav-link.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .sidebar-nav-link .icon {
+            font-size: 1.25rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 32px;
+            max-width: calc(100vw - var(--sidebar-width));
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+        /* Cards & Sections */
+        .card {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
         .upload-section {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
+            background: var(--bg-primary);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
         }
+
         .file-input-group {
             margin-bottom: 20px;
         }
+
         .file-input-group label {
             display: block;
-            font-weight: bold;
+            font-weight: 600;
             margin-bottom: 8px;
-            color: #333;
+            color: var(--text-primary);
+            font-size: 0.875rem;
         }
+
         input[type="file"] {
             width: 100%;
-            padding: 10px;
-            border: 2px dashed #667eea;
+            padding: 12px;
+            border: 2px dashed var(--border);
             border-radius: 8px;
-            background: white;
+            background: var(--bg-secondary);
             cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
         }
+
+        input[type="file"]:hover {
+            border-color: var(--primary);
+            background: var(--bg-primary);
+        }
+
+        /* Buttons */
         button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 15px 40px;
-            font-size: 1.1em;
+            padding: 12px 24px;
+            font-size: 0.9375rem;
             border-radius: 8px;
             cursor: pointer;
-            width: 100%;
-            font-weight: bold;
-            transition: transform 0.2s;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-family: inherit;
         }
-        button:hover:not(:disabled) { transform: translateY(-2px); }
+
+        button:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
         button:disabled {
-            background: #ccc;
+            background: var(--text-tertiary);
             cursor: not-allowed;
             opacity: 0.6;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            width: 100%;
+        }
+
+        .btn-secondary {
+            background: var(--text-secondary);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.875rem;
         }
         .error-message {
             background: #f8d7da;
@@ -686,48 +837,93 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🍹 Cocktail Compatibility Analyzer</h1>
-        <p class="subtitle">Discover what cocktails you can make with your bar stock</p>
-
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <button class="nav-tab active" data-tab="analyze">📊 Analyze</button>
-            <button class="nav-tab" data-tab="mybar">🏠 My Bar</button>
-            <button class="nav-tab" data-tab="recipes">📚 Recipes</button>
-            <button class="nav-tab" data-tab="favorites">❤️ Favorites</button>
-            <button class="nav-tab" data-tab="ai">🤖 AI Assistant</button>
-        </div>
-
-        <!-- Tab: Analyze -->
-        <div id="tab-analyze" class="tab-content active">
-            <div class="upload-section">
-                <div class="file-input-group">
-                    <label>📦 Bar Stock CSV:</label>
-                    <input type="file" id="inventoryFile" accept=".csv">
-                    <div id="inventoryStatus" class="file-status"></div>
-                </div>
-
-                <div class="file-input-group">
-                    <label>📚 Recipe Collection CSV(s):</label>
-                    <input type="file" id="recipeFile" accept=".csv" multiple>
-                    <div id="recipeStatus" class="file-status"></div>
-                </div>
-
-                <button id="analyzeBtn" disabled>Analyze My Bar 🎯</button>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h1>🍹 Bartender</h1>
+                <p class="tagline">Your cocktail companion</p>
             </div>
 
-            <div id="shoppingList" class="shopping-list-section"></div>
-        </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-nav-item">
+                    <button class="sidebar-nav-link active" data-tab="home">
+                        <span class="icon">🏠</span>
+                        <span>Home</span>
+                    </button>
+                </div>
+                <div class="sidebar-nav-item">
+                    <button class="sidebar-nav-link" data-tab="mybar">
+                        <span class="icon">📦</span>
+                        <span>My Bar</span>
+                    </button>
+                </div>
+                <div class="sidebar-nav-item">
+                    <button class="sidebar-nav-link" data-tab="recipes">
+                        <span class="icon">📚</span>
+                        <span>Recipes</span>
+                    </button>
+                </div>
+                <div class="sidebar-nav-item">
+                    <button class="sidebar-nav-link" data-tab="favorites">
+                        <span class="icon">❤️</span>
+                        <span>Favorites</span>
+                    </button>
+                </div>
+                <div class="sidebar-nav-item">
+                    <button class="sidebar-nav-link" data-tab="ai">
+                        <span class="icon">🤖</span>
+                        <span>AI Assistant</span>
+                    </button>
+                </div>
+            </nav>
+        </aside>
 
-        <!-- Tab: My Bar -->
-        <div id="tab-mybar" class="tab-content">
-            <div id="inventoryManager" class="inventory-manager"></div>
-        </div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page: Home/Upload -->
+            <div id="tab-home" class="tab-content active">
+                <div class="page-header">
+                    <h2 class="page-title">Get Started</h2>
+                    <p class="page-subtitle">Upload your bar stock and recipes to discover what cocktails you can make</p>
+                </div>
 
-        <!-- Tab: Recipes -->
-        <div id="tab-recipes" class="tab-content">
-            <div id="searchSection" class="search-section">
+                <div class="upload-section">
+                    <div class="file-input-group">
+                        <label>📦 Bar Stock CSV</label>
+                        <input type="file" id="inventoryFile" accept=".csv">
+                        <div id="inventoryStatus" class="file-status"></div>
+                    </div>
+
+                    <div class="file-input-group">
+                        <label>📚 Recipe Collection CSV(s)</label>
+                        <input type="file" id="recipeFile" accept=".csv" multiple>
+                        <div id="recipeStatus" class="file-status"></div>
+                    </div>
+
+                    <button id="analyzeBtn" class="btn-primary" disabled>Analyze My Bar</button>
+                </div>
+
+                <div id="shoppingList" class="shopping-list-section"></div>
+            </div>
+
+            <!-- Page: My Bar -->
+            <div id="tab-mybar" class="tab-content">
+                <div class="page-header">
+                    <h2 class="page-title">My Bar</h2>
+                    <p class="page-subtitle">Manage your bottle collection</p>
+                </div>
+                <div id="inventoryManager" class="inventory-manager"></div>
+            </div>
+
+            <!-- Page: Recipes -->
+            <div id="tab-recipes" class="tab-content">
+                <div class="page-header">
+                    <h2 class="page-title">Recipes</h2>
+                    <p class="page-subtitle">Browse and search your cocktail collection</p>
+                </div>
+
+                <div id="searchSection" class="search-section">
                 <div class="search-title">🔍 Find Drinks by Ingredient</div>
                 <div class="search-subtitle">Select an ingredient from your bar to find matching cocktails</div>
 
@@ -744,48 +940,55 @@
             <div id="results"></div>
         </div>
 
-        <!-- Tab: Favorites -->
-        <div id="tab-favorites" class="tab-content">
-            <div id="favoritesSection" class="favorites-section"></div>
-        </div>
-
-        <!-- Tab: AI Assistant -->
-        <div id="tab-ai" class="tab-content">
-            <div id="aiSearchSection" class="ai-search-section">
-            <div class="search-title">🤖 AI-Powered Cocktail Search</div>
-            <div class="search-subtitle">Ask questions in natural language or search by tasting notes</div>
-
-            <div class="api-key-section" id="apiKeySection">
-                <label for="apiKey">Anthropic API Key:
-                    <button class="collapse-btn" id="toggleApiKey">Show/Hide</button>
-                </label>
-                <input type="password" id="apiKey" placeholder="sk-ant-..." style="display: none;">
-                <div class="api-key-status" id="apiKeyStatus"></div>
+            <!-- Page: Favorites -->
+            <div id="tab-favorites" class="tab-content">
+                <div class="page-header">
+                    <h2 class="page-title">Favorites</h2>
+                    <p class="page-subtitle">Your saved cocktails and history</p>
+                </div>
+                <div id="favoritesSection" class="favorites-section"></div>
             </div>
 
-            <div class="search-controls">
-                <textarea id="aiQuery" placeholder="Examples:
+            <!-- Page: AI Assistant -->
+            <div id="tab-ai" class="tab-content">
+                <div class="page-header">
+                    <h2 class="page-title">AI Assistant</h2>
+                    <p class="page-subtitle">Chat with your personal bartender</p>
+                </div>
+
+                <div id="aiSearchSection" class="ai-search-section">
+                    <div class="api-key-section" id="apiKeySection">
+                        <label for="apiKey">Anthropic API Key:
+                            <button class="collapse-btn" id="toggleApiKey">Show/Hide</button>
+                        </label>
+                        <input type="password" id="apiKey" placeholder="sk-ant-..." style="display: none;">
+                        <div class="api-key-status" id="apiKeyStatus"></div>
+                    </div>
+
+                    <div class="search-controls">
+                        <textarea id="aiQuery" placeholder="Examples:
 • What cocktails can I make with a funky, high-ester Jamaican rum?
 • Recommend drinks for a hot summer day
 • What can I make with my Hamilton 86 that has notes of molasses and caramel?
 • Show me tiki drinks with tropical flavors"></textarea>
-                <button id="aiQueryBtn" class="ai-query-btn">Ask AI 🔮</button>
-                <button id="clearConversationBtn" class="ai-query-btn" style="background: rgba(255,255,255,0.3);">Clear Conversation 🔄</button>
-            </div>
+                        <button id="aiQueryBtn" class="ai-query-btn">Ask AI</button>
+                        <button id="clearConversationBtn" class="btn-secondary btn-sm">Clear Conversation</button>
+                    </div>
 
-            <div class="ai-examples">
-                <strong>💡 Try asking about:</strong>
-                <ul>
-                    <li>Flavor profiles ("citrus-forward", "spicy", "herbal")</li>
-                    <li>Specific spirits with their tasting notes</li>
-                    <li>Occasions or moods ("refreshing", "strong", "easy to make")</li>
-                    <li>Style preferences ("tiki", "classic", "sour")</li>
-                </ul>
-            </div>
+                    <div class="ai-examples">
+                        <strong>💡 Try asking about:</strong>
+                        <ul>
+                            <li>Flavor profiles ("citrus-forward", "spicy", "herbal")</li>
+                            <li>Specific spirits with their tasting notes</li>
+                            <li>Occasions or moods ("refreshing", "strong", "easy to make")</li>
+                            <li>Style preferences ("tiki", "classic", "sour")</li>
+                        </ul>
+                    </div>
 
-            <div id="aiSearchResponse" class="search-response"></div>
+                    <div id="aiSearchResponse" class="search-response"></div>
+                </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <div id="recipeModal" class="modal">
@@ -862,13 +1065,20 @@
             // Load saved inventory if exists
             if (loadSavedInventory()) {
                 displayInventoryManager();
+                // Convert saved inventory back to APP.inventoryData format
+                if (APP.editableInventory.length > 0) {
+                    APP.inventoryData = APP.editableInventory;
+                }
             }
+
+            // Check if we have saved data to enable analyze button
+            checkReady();
         }
 
         // ===== TAB NAVIGATION =====
 
         function setupTabs() {
-            const tabs = document.querySelectorAll('.nav-tab');
+            const tabs = document.querySelectorAll('.sidebar-nav-link');
             tabs.forEach(tab => {
                 tab.addEventListener('click', function() {
                     const targetTab = this.getAttribute('data-tab');
@@ -883,9 +1093,9 @@
                 content.classList.remove('active');
             });
 
-            // Remove active from all tabs
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
+            // Remove active from all sidebar links
+            document.querySelectorAll('.sidebar-nav-link').forEach(link => {
+                link.classList.remove('active');
             });
 
             // Show selected tab content
@@ -894,10 +1104,10 @@
                 targetContent.classList.add('active');
             }
 
-            // Add active to clicked tab
-            const activeTab = document.querySelector(`.nav-tab[data-tab="${tabName}"]`);
-            if (activeTab) {
-                activeTab.classList.add('active');
+            // Add active to clicked sidebar link
+            const activeLink = document.querySelector(`.sidebar-nav-link[data-tab="${tabName}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
             }
 
             // Refresh content for specific tabs
@@ -1493,8 +1703,7 @@
                     generateShoppingList(results);
                     setupSearch();
 
-                    // Auto-switch to Recipes tab after analysis
-                    switchTab('recipes');
+                    // Analysis complete - user can now navigate to other tabs
                 } catch (error) {
                     showError('Analysis failed: ' + error.message);
                     console.error('Analysis error:', error);
