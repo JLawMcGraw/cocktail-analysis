@@ -7,38 +7,51 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root {
-            /* Apple-inspired minimalist palette */
-            --primary: #007aff;
-            --primary-dark: #0051d5;
-            --primary-light: #e5f1ff;
-            --secondary: #5856d6;
-            --success: #34c759;
-            --danger: #ff3b30;
-            --warning: #ff9500;
+            /* Modern minimalist with tropical accents */
+            --primary: #0a7ea4;
+            --primary-dark: #076a8a;
+            --primary-light: #e0f4f9;
+            --secondary: #ff6b6b;
+            --secondary-dark: #e85555;
+            --secondary-light: #ffe5e5;
 
-            /* Clean backgrounds */
+            /* Tropical accent colors */
+            --coral: #ff7b54;
+            --teal: #14b8a6;
+            --sunset: #ffa94d;
+            --palm: #10b981;
+
+            /* Category colors */
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #0a7ea4;
+
+            /* Modern backgrounds */
             --bg-primary: #ffffff;
-            --bg-secondary: #fafafa;
-            --bg-tertiary: #f5f5f7;
-            --bg-hover: #f0f0f0;
+            --bg-secondary: #fafaf9;
+            --bg-tertiary: #f5f5f4;
+            --bg-hover: #f0f0ef;
+            --bg-accent: linear-gradient(135deg, #fff7ed 0%, #fef3f2 100%);
 
             /* Text colors */
-            --text-primary: #1d1d1f;
-            --text-secondary: #86868b;
-            --text-tertiary: #d2d2d7;
+            --text-primary: #1c1917;
+            --text-secondary: #78716c;
+            --text-tertiary: #d6d3d1;
 
             /* Borders and dividers */
-            --border: #d2d2d7;
-            --border-light: #e8e8ed;
+            --border: #d6d3d1;
+            --border-light: #e7e5e4;
 
-            /* Shadows */
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.08);
+            /* Enhanced shadows */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 20px 25px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.15);
 
             --sidebar-width: 260px;
-            --radius: 12px;
-            --radius-sm: 8px;
+            --radius: 16px;
+            --radius-sm: 10px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -61,7 +74,7 @@
         /* Sidebar */
         .sidebar {
             width: var(--sidebar-width);
-            background: var(--bg-primary);
+            background: linear-gradient(180deg, var(--bg-primary) 0%, #fafaf9 100%);
             border-right: 1px solid var(--border-light);
             padding: 32px 0;
             position: fixed;
@@ -69,6 +82,7 @@
             left: 0;
             top: 0;
             overflow-y: auto;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.03);
         }
 
         .sidebar-brand {
@@ -122,8 +136,9 @@
         }
 
         .sidebar-nav-link.active {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--teal) 100%);
             color: white;
+            box-shadow: 0 4px 12px rgba(10, 126, 164, 0.25);
         }
 
         .sidebar-nav-link .icon {
@@ -160,7 +175,27 @@
             padding: 24px;
             border: 1px solid var(--border-light);
             margin-bottom: 24px;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--coral) 0%, var(--sunset) 50%, var(--teal) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .card:hover::before {
+            opacity: 1;
+        }
+        .card:hover {
+            box-shadow: var(--shadow-lg);
         }
 
         .upload-section {
@@ -202,7 +237,7 @@
 
         /* Buttons */
         button {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--teal) 100%);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -210,25 +245,26 @@
             border-radius: var(--radius-sm);
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.15s ease;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: inherit;
+            box-shadow: 0 2px 8px rgba(10, 126, 164, 0.2);
         }
 
         button:hover:not(:disabled) {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(10, 126, 164, 0.3);
         }
 
         button:active:not(:disabled) {
             transform: translateY(0);
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 2px 8px rgba(10, 126, 164, 0.2);
         }
 
         button:disabled {
             background: var(--text-tertiary);
             cursor: not-allowed;
             opacity: 0.5;
+            box-shadow: none;
         }
 
         .btn-primary {
@@ -237,11 +273,16 @@
         }
 
         .btn-secondary {
-            background: var(--text-secondary);
+            background: linear-gradient(135deg, var(--text-secondary) 0%, #57534e 100%);
         }
 
         .btn-danger {
-            background: var(--danger);
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
         }
 
         .btn-sm {
@@ -281,35 +322,39 @@
             border-left: 4px solid;
         }
         .perfect {
-            background: #f0fdf4;
-            color: var(--success);
-            border-left-color: var(--success);
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            color: var(--palm);
+            border-left-color: var(--palm);
         }
         .very-good {
-            background: #fffbeb;
-            color: var(--warning);
-            border-left-color: var(--warning);
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+            color: var(--sunset);
+            border-left-color: var(--sunset);
         }
         .good {
-            background: var(--primary-light);
+            background: linear-gradient(135deg, #e0f4f9 0%, #cfe9f3 100%);
             color: var(--primary-dark);
-            border-left-color: var(--primary);
+            border-left-color: var(--teal);
         }
         .recipe-item {
             background: var(--bg-primary);
-            padding: 16px;
-            margin-bottom: 12px;
+            padding: 18px;
+            margin-bottom: 14px;
             border-radius: var(--radius-sm);
             border: 1px solid var(--border-light);
-            border-left: 3px solid var(--primary);
+            border-left: 4px solid transparent;
+            background-image: linear-gradient(var(--bg-primary), var(--bg-primary)),
+                            linear-gradient(135deg, var(--coral) 0%, var(--sunset) 100%);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
             box-shadow: var(--shadow-sm);
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .recipe-item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-            border-left-color: var(--primary-dark);
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: var(--shadow-lg);
+            border-color: transparent;
         }
         .recipe-name {
             font-weight: 600;
@@ -332,23 +377,44 @@
             margin-bottom: 32px;
         }
         .stat-card {
-            background: var(--bg-primary);
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
             border: 1px solid var(--border-light);
-            padding: 24px;
+            padding: 28px;
             border-radius: var(--radius);
             text-align: center;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--coral) 0%, var(--sunset) 50%, var(--teal) 100%);
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
         .stat-number {
-            font-size: 2.5rem;
+            font-size: 2.75rem;
             font-weight: 700;
-            color: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--teal) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .stat-label {
             font-size: 0.875rem;
             color: var(--text-secondary);
-            margin-top: 4px;
+            margin-top: 8px;
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
         .loading {
             text-align: center;
@@ -363,10 +429,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             z-index: 1000;
             overflow-y: auto;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
         .modal.active {
             display: flex;
