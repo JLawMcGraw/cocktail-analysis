@@ -4,14 +4,47 @@ A web application that helps you review your bar stock and match it to cocktail 
 
 ## Features
 
-- **Upload Bar Stock**: Import your ingredient inventory via CSV
+### Core Functionality
+- **Upload Bar Stock**: Import your ingredient inventory via CSV with full metadata (12 columns supported)
 - **Upload Recipes**: Load one or multiple recipe collections
 - **Compatibility Analysis**: See which cocktails you can make with what you have
 - **Fuzzy Ingredient Matching**: Automatically handles spelling variations like "passionfruit" vs "passion fruit"
-- **AI-Powered Search**: Ask natural language questions and search by tasting notes using Claude AI
 - **Smart Shopping List**: Discover which ingredients would unlock the most new recipes
 - **Ingredient Search**: Find cocktails that use specific ingredients from your bar
 - **Detailed Recipe View**: See full instructions, ingredients, and what you're missing
+
+### New in v4.0!
+
+#### 📦 Complete Bottle Data Preservation
+- **12-Column CSV Support**: Preserve ALL your bottle metadata
+  - Liquor Type, Name, Stock Number
+  - Detailed Spirit Classification, Distillation Method
+  - ABV (%), Distillery Location
+  - Age Statement or Barrel Finish
+  - Additional Notes
+  - Profile (Nose), Palate, Finish
+- **Rich Display**: See all your bottle details in organized cards
+- **Full Export**: Export inventory with all metadata intact
+
+#### 💬 Conversational AI Bartender
+- **Multi-Turn Dialogue**: Have natural back-and-forth conversations with Claude AI
+- **Context Memory**: AI remembers your conversation history
+- **Explanations**: Get WHY the AI recommends each cocktail
+- **Tasting Note Search**: "I have a funky, high-ester Jamaican rum"
+- **Natural Language**: Ask questions like you're talking to a real bartender
+
+#### ❤️ Favorites & History Tracking
+- **Favorites**: Heart button to save your favorite cocktails
+- **Made This**: Track when you make drinks with dates
+- **5-Star Ratings**: Rate cocktails you've tried
+- **Personal Notes**: Add your own tasting notes and tweaks
+- **Persistent**: All saved locally in your browser
+
+#### 🏠 Inventory Management
+- **Live Editing**: Add/remove bottles without re-uploading CSVs
+- **Real-Time Updates**: Recipes update instantly when you change inventory
+- **Export Anytime**: Download your current inventory as CSV
+- **Persistent Storage**: Inventory saved between browser sessions
 
 ## Quick Start
 
@@ -90,19 +123,43 @@ The app now includes AI-powered cocktail recommendations using Claude! You can:
 
 ### Bar Stock CSV
 
-Your inventory CSV should have these columns:
+#### Simple Format (Minimum Required)
+Your inventory CSV needs at minimum:
 - `Name`: Ingredient name
 - `Stock Number`: Quantity (use 1 for in stock, 0 for out of stock)
-- `Category`: (Optional) Type of ingredient
 
-Example:
 ```csv
-Name,Stock Number,Category
-Cruzan Single Barrel Rum,1,Rum
-Simple Syrup,1,Syrup
-Lime Juice,1,Juice
-Coconut Cream,0,Mixer
+Name,Stock Number
+Cruzan Single Barrel Rum,1
+Simple Syrup,1
+Lime Juice,1
+Coconut Cream,0
 ```
+
+#### Full Format (12 Columns - Recommended for Spirits)
+For spirits and detailed bottle tracking, use all 12 columns:
+
+```csv
+Liquor Type,Name,Stock Number,Detailed Spirit Classification,Distillation Method,ABV (%),Distillery Location,Age Statement or Barrel Finish,Additional Notes,Profile (Nose),Palate,Finish
+Rum,Hamilton 86 Demerara Rum,1,Demerara Rum,Pot Still,43,Guyana,Unaged,Perfect for Mai Tais,Molasses and caramel,Rich vanilla and oak,Long sweet finish
+Rum,Smith & Cross,1,Jamaican Rum,Pot Still,57,Jamaica,Unaged,High-ester funk,Overripe banana and pineapple,Intense tropical fruit,Very long and funky
+```
+
+**Column Details:**
+- `Liquor Type`: Spirit category (Rum, Whiskey, Gin, etc.)
+- `Name`: Bottle name
+- `Stock Number`: Quantity (1 = in stock, 0 = out of stock)
+- `Detailed Spirit Classification`: Specific style (Demerara Rum, Single Malt, etc.)
+- `Distillation Method`: Pot Still, Column Still, etc.
+- `ABV (%)`: Alcohol percentage
+- `Distillery Location`: Country or region
+- `Age Statement or Barrel Finish`: Aging info (5 Year, Ex-Bourbon, Unaged, etc.)
+- `Additional Notes`: Usage notes, cocktail suggestions
+- `Profile (Nose)`: Aroma description
+- `Palate`: Taste profile
+- `Finish`: Aftertaste description
+
+**Note:** All columns are preserved in the app and displayed in the inventory manager. You can export your inventory back to CSV with all data intact.
 
 ### Recipe CSV
 

@@ -2,6 +2,111 @@
 
 All notable changes and fixes to the Cocktail Compatibility Analyzer.
 
+## [4.0.0] - 2025-10-24
+
+### Major New Features
+
+#### 📦 Complete Bottle Data Preservation (12 CSV Columns)
+- **Full Metadata Support**: Now preserves ALL 12 columns from your bar stock CSV
+- **Supported Fields**:
+  - Liquor Type
+  - Name
+  - Stock Number
+  - Detailed Spirit Classification
+  - Distillation Method
+  - ABV (%)
+  - Distillery Location
+  - Age Statement or Barrel Finish
+  - Additional Notes
+  - Profile (Nose)
+  - Palate
+  - Finish
+- **Rich Display**: Organized cards showing type, location, ABV, aging, and full tasting profiles
+- **Complete Export**: CSV export preserves all 12 columns with proper escaping
+- **localStorage Persistence**: All bottle data saved between sessions
+
+#### 💬 Conversational AI Bartender
+- **Multi-Turn Dialogue**: Have back-and-forth conversations with the AI
+- **Context Preservation**: AI remembers previous messages in the conversation
+- **Explanatory Responses**: AI now explains WHY it recommends each cocktail
+- **Clear Conversation**: Button to reset and start fresh
+- **Optimized Prompts**: Reduced token usage by 70-80% to avoid rate limits
+- **Model Compatibility**: Uses Claude 3 Haiku for broad API key compatibility
+
+#### ❤️ Favorites & History Tracking
+- **Favorite Drinks**: Heart button to save your favorite cocktails
+- **"Made This" Tracking**: Record when you make drinks with timestamp history
+- **5-Star Rating System**: Rate cocktails you've tried
+- **Personal Notes**: Add your own tasting notes and modifications
+- **localStorage Persistence**: All favorites and history saved locally
+- **Dedicated Section**: Beautiful UI showing all your favorites
+
+#### 🏠 Inventory Management System
+- **Live Add/Remove**: Manage your bar stock without re-uploading CSVs
+- **Real-Time Updates**: Recipe compatibility updates instantly when you add/remove bottles
+- **Grid Display**: Clean card-based layout showing all your bottles
+- **Rich Bottle Cards**: Display all metadata (type, distillery, ABV, tasting notes, etc.)
+- **Export Functionality**: Export your current inventory back to CSV
+- **Persistent Storage**: Inventory saved in localStorage between sessions
+
+### Technical Improvements
+
+#### Data Handling
+- `analyze()`: Now explicitly preserves all 12 CSV columns
+- `displayInventoryManager()`: Shows organized multi-line bottle information
+- `addIngredient()`: Creates bottles with complete metadata structure
+- `exportInventory()`: Exports all columns with proper CSV escaping
+- Backwards compatibility with old string-based inventory format
+
+#### UI/UX Enhancements
+- Wider inventory cards (350px minimum) to accommodate rich data
+- New `.inventory-tasting-profile` CSS styling for formatted tasting notes
+- Organized display: Type • Classification / Location • ABV • Age
+- Collapsible tasting profile sections (Nose/Palate/Finish)
+- Emoji indicators for additional notes
+
+#### AI Integration
+- Conversation history tracking with `APP.conversationHistory`
+- Token optimization: Send only first 3-4 ingredients per recipe
+- Limit to 30 recipes in AI context
+- Remove verbose descriptions to stay under rate limits
+- Better error messages for rate limit issues
+
+#### Favorites System
+- `toggleFavorite()`: Add/remove favorites with heart button
+- `markAsMade()`: Track when drinks are made
+- `setRating()`: 5-star rating system
+- `saveNotes()`: Personal tasting notes
+- All data stored in localStorage with JSON serialization
+
+#### Inventory Management
+- `loadSavedInventory()`: Load from localStorage on init
+- `saveInventory()`: Save after every change
+- `reanalyzeWithCurrentInventory()`: Instant recipe re-analysis
+- `displayInventoryManager()`: Rich card display
+- Event delegation for remove buttons
+
+### Bug Fixes
+
+1. **Fixed rate limit errors** by optimizing AI prompt size
+2. **Fixed ingredient search** to use fuzzy matching in dropdown
+3. **Fixed conversation flow** - AI now explains recommendations
+4. **Fixed data loss** - All CSV columns now preserved through the app
+5. **Fixed export** - CSV export now includes all metadata
+
+### Performance
+
+- Real-time recipe analysis without page reload
+- Efficient localStorage usage for persistence
+- Grid layout optimizations for many bottles
+- Instant UI updates on inventory changes
+
+### Files Updated
+
+- `index.html`: Added favorites, history, inventory management, conversational AI, and 12-column support
+- `proxy-server.js`: Existing proxy server for AI API calls
+- Sample CSVs remain compatible
+
 ## [3.0.0] - 2025-10-23
 
 ### Major New Features
