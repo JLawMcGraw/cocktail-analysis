@@ -871,7 +871,7 @@
             }
         }
 
-        // Query Claude API
+        // Query Claude API via proxy server
         async function queryClaudeAPI(userQuery) {
             // Prepare cocktail data for Claude
             const allRecipes = APP.allResults.perfect.concat(APP.allResults.veryGood, APP.allResults.good);
@@ -905,12 +905,14 @@ Respond with ONLY a JSON array of cocktail names in order of relevance. For exam
 
 Do not include any other text or explanation.`;
 
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
+            // Use proxy server to avoid CORS issues
+            const proxyUrl = 'http://localhost:3000/api/messages';
+
+            const response = await fetch(proxyUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': APP.apiKey,
-                    'anthropic-version': '2023-06-01'
+                    'x-api-key': APP.apiKey
                 },
                 body: JSON.stringify({
                     model: 'claude-3-5-sonnet-20241022',
@@ -923,8 +925,22 @@ Do not include any other text or explanation.`;
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error?.message || 'API request failed');
+                const errorText = await response.text();
+                let errorMessage = 'API request failed';
+
+                try {
+                    const error = JSON.parse(errorText);
+                    errorMessage = error.error?.message || error.error || errorMessage;
+                } catch (e) {
+                    errorMessage = errorText || errorMessage;
+                }
+
+                // Check if it's a connection error
+                if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+                    throw new Error('Cannot connect to proxy server. Make sure to run: node proxy-server.js');
+                }
+
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();

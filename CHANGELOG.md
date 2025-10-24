@@ -77,6 +77,30 @@ All notable changes and fixes to the Cocktail Compatibility Analyzer.
 - Added "Hurricane" cocktail to sample recipes using "Passion Fruit Syrup"
 - Demonstrates fuzzy matching in action
 
+### Infrastructure
+
+#### Proxy Server (v3.0.1)
+- **Added `proxy-server.js`**: Node.js proxy server to handle AI API calls
+- **Solves CORS Issue**: Browsers can't call Anthropic API directly due to security
+- **Simple Setup**: Just run `node proxy-server.js` before using AI features
+- **Port Configuration**: Runs on localhost:3000 by default
+- **Error Handling**: Clear error messages and connection status
+- **Security**: Forwards API key without storing it
+
+**Why needed?**
+- Browsers block direct API calls to external services (CORS policy)
+- Proxy server runs locally and forwards requests securely
+- Your API key stays on your computer only
+
+**Added Files:**
+- `proxy-server.js`: HTTP server that proxies requests to Anthropic
+- `package.json`: Node.js project configuration
+
+**Updated Files:**
+- `index.html`: Changed API endpoint to use proxy at `http://localhost:3000/api/messages`
+- `README.md`: Added proxy server setup instructions and troubleshooting
+- Error messages now guide users to start the proxy server
+
 ## [2.0.0] - 2025-10-23
 
 ### Major Improvements

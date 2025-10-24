@@ -15,11 +15,33 @@ A web application that helps you review your bar stock and match it to cocktail 
 
 ## Quick Start
 
+### Basic Usage (No AI)
+
 1. Open `index.html` in your web browser
 2. Upload your bar stock CSV file (see format below)
 3. Upload your recipe CSV file(s) (see format below)
 4. Click "Analyze My Bar" to see results
-5. (Optional) Enter your Anthropic API key to use AI-powered search
+
+### With AI-Powered Search
+
+1. **Start the proxy server** (required for AI features):
+   ```bash
+   node proxy-server.js
+   ```
+   You should see: `🍹 Cocktail Analyzer Proxy Server Running`
+
+2. **Open the app** in your browser:
+   - Open `index.html` in your web browser
+
+3. **Analyze your bar**:
+   - Upload your inventory and recipe files
+   - Click "Analyze My Bar"
+
+4. **Set up AI search**:
+   - Get an API key from [Anthropic's Console](https://console.anthropic.com/)
+   - Click "Show/Hide" in the AI search section
+   - Enter your API key
+   - Start asking questions!
 
 ## AI-Powered Search
 
@@ -32,13 +54,28 @@ The app now includes AI-powered cocktail recommendations using Claude! You can:
 
 ### Setting Up AI Search
 
-1. Get an API key from [Anthropic's Console](https://console.anthropic.com/)
-2. After analyzing your bar, the AI search section will appear
-3. Click "Show/Hide" to reveal the API key input
-4. Enter your API key (it's saved in your browser's localStorage)
-5. Start asking questions!
+**Prerequisites:**
+- Node.js installed on your computer ([Download](https://nodejs.org/))
+- Anthropic API key ([Get one here](https://console.anthropic.com/))
 
-**Note**: Your API key is stored locally in your browser only. API calls are made directly from your browser to Anthropic.
+**Setup Steps:**
+
+1. **Start the proxy server:**
+   ```bash
+   node proxy-server.js
+   ```
+   Keep this running in the terminal while using the app.
+
+   **Why is a proxy needed?** Browsers block direct API calls to Anthropic due to CORS (security). The proxy server handles this for you.
+
+2. **Use the app:**
+   - Open `index.html` in your browser
+   - Analyze your bar
+   - Click "Show/Hide" in the AI section
+   - Enter your API key (saved in browser localStorage)
+   - Ask away!
+
+**Security Note:** Your API key is stored locally in your browser only. The proxy server runs on your computer and forwards requests to Anthropic without storing your key.
 
 ### AI Search Examples
 
@@ -227,17 +264,23 @@ Should work in:
 
 - **HTML5**: Structure
 - **CSS3**: Styling with gradients, animations, grid layout
-- **JavaScript (ES6+)**: Application logic
-- **Papa Parse**: CSV parsing library
+- **JavaScript (ES6+)**: Application logic, fuzzy matching algorithms
+- **Papa Parse**: CSV parsing library (CDN)
+- **Node.js**: Proxy server for AI API calls
+- **Anthropic Claude API**: AI-powered cocktail recommendations
 
 ## File Structure
 
 ```
 cocktail-analysis/
 ├── index.html              # Main application (single-page app)
+├── proxy-server.js         # Node.js proxy server for AI API calls
+├── package.json            # Node.js project configuration
 ├── sample-bar-stock.csv    # Example inventory file
 ├── sample-recipes.csv      # Example recipe file
-└── README.md              # This file
+├── CHANGELOG.md           # Detailed version history
+├── README.md              # This file
+└── .gitignore             # Git ignore rules
 ```
 
 ## Known Limitations
@@ -262,19 +305,40 @@ cocktail-analysis/
 
 ## Troubleshooting
 
-### "No matching recipes found"
+### AI Search Issues
+
+**"Cannot connect to proxy server"**
+- Make sure the proxy server is running: `node proxy-server.js`
+- Check that the server started successfully (you should see the banner)
+- Verify the server is running on port 3000
+- Check your firewall isn't blocking localhost connections
+
+**"Port 3000 is already in use"**
+- Another application is using port 3000
+- Stop the other application, or
+- Edit `proxy-server.js` and change the `PORT` variable
+- Also update the port in `index.html` (search for `localhost:3000`)
+
+**AI returns unexpected results**
+- Try rephrasing your query more specifically
+- Include flavor descriptors or cocktail styles
+- Make sure you've analyzed your bar first
+
+### General Issues
+
+**"No matching recipes found"**
 - Check that ingredient names match between your inventory and recipes
 - Review common aliases in the code - you may need to add your specific brands
 - Make sure your inventory CSV has `Stock Number` > 0 for available items
 
-### "Invalid format" error
+**"Invalid format" error**
 - Verify CSV has required columns: `Name` and `Stock Number` for inventory
 - Verify CSV has required columns: `Drink Name` and `Ingredients` for recipes
 - Check for proper CSV formatting (commas, quotes for multi-line cells)
 
-### Recipes showing as 0% compatible
+**Recipes showing as 0% compatible**
 - Ingredient name mismatch between inventory and recipe
-- Check capitalization and spelling
+- The fuzzy matching should help, but very different spellings might not match
 - Add custom aliases for your brands in the `addAliases()` function
 
 ## License
