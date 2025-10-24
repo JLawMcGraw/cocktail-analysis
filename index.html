@@ -630,36 +630,128 @@
             background: #667eea;
             color: white;
         }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+            overflow-x: auto;
+        }
+        .nav-tab {
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .nav-tab:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        .nav-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+
+        /* Tab Content Sections */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Clean up section margins when in tabs */
+        .tab-content .favorites-section,
+        .tab-content .inventory-manager,
+        .tab-content .ai-search-section,
+        .tab-content .search-section {
+            display: block;
+            margin-bottom: 0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🍹 Cocktail Compatibility Analyzer</h1>
-        <p class="subtitle">Upload your bar stock and recipe collection to see what you can make!</p>
+        <p class="subtitle">Discover what cocktails you can make with your bar stock</p>
 
-        <div class="upload-section">
-            <div class="file-input-group">
-                <label>📦 Bar Stock CSV:</label>
-                <input type="file" id="inventoryFile" accept=".csv">
-                <div id="inventoryStatus" class="file-status"></div>
-            </div>
-
-            <div class="file-input-group">
-                <label>📚 Recipe Collection CSV(s):</label>
-                <input type="file" id="recipeFile" accept=".csv" multiple>
-                <div id="recipeStatus" class="file-status"></div>
-            </div>
-
-            <button id="analyzeBtn" disabled>Analyze My Bar 🎯</button>
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="analyze">📊 Analyze</button>
+            <button class="nav-tab" data-tab="mybar">🏠 My Bar</button>
+            <button class="nav-tab" data-tab="recipes">📚 Recipes</button>
+            <button class="nav-tab" data-tab="favorites">❤️ Favorites</button>
+            <button class="nav-tab" data-tab="ai">🤖 AI Assistant</button>
         </div>
 
-        <div id="favoritesSection" class="favorites-section"></div>
+        <!-- Tab: Analyze -->
+        <div id="tab-analyze" class="tab-content active">
+            <div class="upload-section">
+                <div class="file-input-group">
+                    <label>📦 Bar Stock CSV:</label>
+                    <input type="file" id="inventoryFile" accept=".csv">
+                    <div id="inventoryStatus" class="file-status"></div>
+                </div>
 
-        <div id="inventoryManager" class="inventory-manager"></div>
+                <div class="file-input-group">
+                    <label>📚 Recipe Collection CSV(s):</label>
+                    <input type="file" id="recipeFile" accept=".csv" multiple>
+                    <div id="recipeStatus" class="file-status"></div>
+                </div>
 
-        <div id="shoppingList" class="shopping-list-section"></div>
+                <button id="analyzeBtn" disabled>Analyze My Bar 🎯</button>
+            </div>
 
-        <div id="aiSearchSection" class="ai-search-section">
+            <div id="shoppingList" class="shopping-list-section"></div>
+        </div>
+
+        <!-- Tab: My Bar -->
+        <div id="tab-mybar" class="tab-content">
+            <div id="inventoryManager" class="inventory-manager"></div>
+        </div>
+
+        <!-- Tab: Recipes -->
+        <div id="tab-recipes" class="tab-content">
+            <div id="searchSection" class="search-section">
+                <div class="search-title">🔍 Find Drinks by Ingredient</div>
+                <div class="search-subtitle">Select an ingredient from your bar to find matching cocktails</div>
+
+                <div class="search-controls">
+                    <select id="ingredientSelect">
+                        <option value="">-- Select an ingredient --</option>
+                    </select>
+                    <button id="searchBtn" class="search-btn">Find Drinks</button>
+                </div>
+
+                <div id="searchResponse" class="search-response"></div>
+            </div>
+
+            <div id="results"></div>
+        </div>
+
+        <!-- Tab: Favorites -->
+        <div id="tab-favorites" class="tab-content">
+            <div id="favoritesSection" class="favorites-section"></div>
+        </div>
+
+        <!-- Tab: AI Assistant -->
+        <div id="tab-ai" class="tab-content">
+            <div id="aiSearchSection" class="ai-search-section">
             <div class="search-title">🤖 AI-Powered Cocktail Search</div>
             <div class="search-subtitle">Ask questions in natural language or search by tasting notes</div>
 
@@ -692,23 +784,8 @@
             </div>
 
             <div id="aiSearchResponse" class="search-response"></div>
-        </div>
-
-        <div id="searchSection" class="search-section">
-            <div class="search-title">🔍 Find Drinks by Ingredient</div>
-            <div class="search-subtitle">Select an ingredient from your bar to find matching cocktails</div>
-
-            <div class="search-controls">
-                <select id="ingredientSelect">
-                    <option value="">-- Select an ingredient --</option>
-                </select>
-                <button id="searchBtn" class="search-btn">Find Drinks</button>
             </div>
-
-            <div id="searchResponse" class="search-response"></div>
         </div>
-
-        <div id="results"></div>
     </div>
 
     <div id="recipeModal" class="modal">
@@ -773,11 +850,62 @@
             elements.aiQueryBtn.addEventListener('click', handleAIQuery);
             elements.clearConversationBtn.addEventListener('click', clearConversation);
 
+            // Setup tab navigation
+            setupTabs();
+
             // Load API key from localStorage
             loadApiKey();
 
             // Load favorites and history
             loadFavoritesAndHistory();
+
+            // Load saved inventory if exists
+            if (loadSavedInventory()) {
+                displayInventoryManager();
+            }
+        }
+
+        // ===== TAB NAVIGATION =====
+
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+                    switchTab(targetTab);
+                });
+            });
+        }
+
+        function switchTab(tabName) {
+            // Hide all tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Remove active from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab content
+            const targetContent = document.getElementById('tab-' + tabName);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+
+            // Add active to clicked tab
+            const activeTab = document.querySelector(`.nav-tab[data-tab="${tabName}"]`);
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+
+            // Refresh content for specific tabs
+            if (tabName === 'mybar' && APP.editableInventory.length > 0) {
+                displayInventoryManager();
+            } else if (tabName === 'favorites') {
+                displayFavorites();
+            }
         }
 
         // ===== FAVORITES & HISTORY FUNCTIONS =====
@@ -1364,8 +1492,9 @@
                     displayInventoryManager();
                     generateShoppingList(results);
                     setupSearch();
-                    elements.searchSection.style.display = 'block';
-                    elements.aiSearchSection.style.display = 'block';
+
+                    // Auto-switch to Recipes tab after analysis
+                    switchTab('recipes');
                 } catch (error) {
                     showError('Analysis failed: ' + error.message);
                     console.error('Analysis error:', error);
