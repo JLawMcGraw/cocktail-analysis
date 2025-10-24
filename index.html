@@ -2409,7 +2409,7 @@ RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
 
             let html = '<div style="display: flex; justify-content: space-between; align-items: start;">';
             html += '<div class="modal-title">' + escapeHtml(recipe.name) + '</div>';
-            html += '<button id="favoriteBtn" class="favorite-btn' + (isFavorite ? ' active' : '') + '" onclick="toggleFavorite(\'' + escapeHtml(recipe.name) + '\')">';
+            html += '<button id="favoriteBtn" class="favorite-btn' + (isFavorite ? ' active' : '') + '" data-recipe-name="' + escapeHtml(recipe.name) + '">';
             html += isFavorite ? '❤️' : '🤍';
             html += '</button>';
             html += '</div>';
@@ -2418,7 +2418,7 @@ RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
 
             // Action buttons
             html += '<div class="action-buttons">';
-            html += '<button class="action-btn" onclick="markAsMade(\'' + escapeHtml(recipe.name) + '\')">✓ Made This</button>';
+            html += '<button id="madeThisBtn" class="action-btn" data-recipe-name="' + escapeHtml(recipe.name) + '">✓ Made This</button>';
             html += '</div>';
 
             // History section
@@ -2434,16 +2434,16 @@ RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
 
                 // Rating
                 html += '<div style="margin-top: 10px;"><strong>Your Rating:</strong></div>';
-                html += '<div id="ratingStars" class="rating-stars">';
+                html += '<div id="ratingStars" class="rating-stars" data-recipe-name="' + escapeHtml(recipe.name) + '">';
                 for (let i = 1; i <= 5; i++) {
-                    html += '<span class="' + (i <= history.rating ? 'filled' : '') + '" onclick="setRating(\'' + escapeHtml(recipe.name) + '\', ' + i + ')">★</span>';
+                    html += '<span class="' + (i <= history.rating ? 'filled' : '') + '" data-rating="' + i + '">★</span>';
                 }
                 html += '</div>';
 
                 // Notes
                 html += '<div style="margin-top: 10px;"><strong>Your Notes:</strong></div>';
                 html += '<textarea class="notes-input" id="recipeNotes" placeholder="Add your notes...">' + escapeHtml(history.notes) + '</textarea>';
-                html += '<button class="action-btn" style="margin-top: 10px;" onclick="saveNotes(\'' + escapeHtml(recipe.name) + '\', document.getElementById(\'recipeNotes\').value)">Save Notes</button>';
+                html += '<button id="saveNotesBtn" class="action-btn" style="margin-top: 10px;" data-recipe-name="' + escapeHtml(recipe.name) + '">Save Notes</button>';
                 html += '</div>';
             }
 
@@ -2473,6 +2473,44 @@ RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
 
             elements.modalBody.innerHTML = html;
             elements.modal.classList.add('active');
+
+            // Add event listeners after HTML is inserted
+            const favoriteBtn = document.getElementById('favoriteBtn');
+            if (favoriteBtn) {
+                favoriteBtn.addEventListener('click', function() {
+                    const recipeName = this.getAttribute('data-recipe-name');
+                    toggleFavorite(recipeName);
+                });
+            }
+
+            const madeThisBtn = document.getElementById('madeThisBtn');
+            if (madeThisBtn) {
+                madeThisBtn.addEventListener('click', function() {
+                    const recipeName = this.getAttribute('data-recipe-name');
+                    markAsMade(recipeName);
+                });
+            }
+
+            const ratingStars = document.getElementById('ratingStars');
+            if (ratingStars) {
+                const recipeName = ratingStars.getAttribute('data-recipe-name');
+                const stars = ratingStars.querySelectorAll('span');
+                stars.forEach(function(star) {
+                    star.addEventListener('click', function() {
+                        const rating = parseInt(this.getAttribute('data-rating'));
+                        setRating(recipeName, rating);
+                    });
+                });
+            }
+
+            const saveNotesBtn = document.getElementById('saveNotesBtn');
+            if (saveNotesBtn) {
+                saveNotesBtn.addEventListener('click', function() {
+                    const recipeName = this.getAttribute('data-recipe-name');
+                    const notes = document.getElementById('recipeNotes').value;
+                    saveNotes(recipeName, notes);
+                });
+            }
         }
 
         // Close modal
