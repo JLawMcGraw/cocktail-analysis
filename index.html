@@ -1389,8 +1389,24 @@ Respond ONLY with a JSON array of exact cocktail names:
             const matches = [];
 
             allRecipes.forEach(function(recipe) {
-                const ingredients = recipe.fullRecipe.Ingredients.toLowerCase();
-                if (ingredients.includes(selected.toLowerCase())) {
+                // Split ingredients into lines and check each one with fuzzy matching
+                const ingredientLines = recipe.fullRecipe.Ingredients.split('\n');
+                let foundMatch = false;
+
+                for (let line of ingredientLines) {
+                    const normalized = normalizeIngredient(line);
+                    const selectedNorm = normalizeIngredient(selected);
+
+                    // Check with fuzzy matching
+                    if (normalized.includes(selectedNorm) ||
+                        selectedNorm.includes(normalized) ||
+                        areSimilarIngredients(normalized, selectedNorm, 0.85)) {
+                        foundMatch = true;
+                        break;
+                    }
+                }
+
+                if (foundMatch) {
                     matches.push(recipe);
                 }
             });
