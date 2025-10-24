@@ -876,34 +876,31 @@
             // Prepare cocktail data for Claude
             const allRecipes = APP.allResults.perfect.concat(APP.allResults.veryGood, APP.allResults.good);
 
-            const recipeSummaries = allRecipes.map(r => ({
-                name: r.name,
-                compatibility: r.compatibility,
-                ingredients: r.fullRecipe.Ingredients,
-                instructions: r.fullRecipe.Instructions,
-                missing: r.missing
-            }));
+            // Create compact recipe list (reduce tokens)
+            const recipeList = allRecipes.map(r => {
+                // Get main spirits/ingredients only (first 3-4 ingredients)
+                const ingredientLines = r.fullRecipe.Ingredients.split('\n').slice(0, 4);
+                const mainIngredients = ingredientLines.map(line => {
+                    // Extract ingredient name without measurements
+                    return line.replace(/^\d+[\s\/]*\d*[\s\/]*\d*\s*/, '')
+                               .replace(/ounces?|oz|teaspoons?|tsp|tablespoons?|tbsp|dash(es)?|drops?|cups?|ml|cl/gi, '')
+                               .trim();
+                }).join(', ');
 
-            const inventoryList = Array.from(APP.currentInventory.keys());
+                return `${r.name} (${r.compatibility}% match) - ${mainIngredients}`;
+            });
 
-            const systemPrompt = `You are a knowledgeable bartender helping users find cocktails from their recipe collection based on their bar inventory and preferences.
+            // Limit to top 30 recipes to reduce token usage
+            const topRecipes = recipeList.slice(0, 30);
 
-The user has the following ingredients available:
-${inventoryList.join(', ')}
+            const systemPrompt = `You are a bartender helping find cocktails. The user can make these drinks:
 
-They can make these cocktails:
-${JSON.stringify(recipeSummaries, null, 2)}
+${topRecipes.join('\n')}
 
-Based on their query, recommend 3-5 cocktails from their available recipes that best match what they're asking for. Consider:
-- Flavor profiles and tasting notes mentioned
-- Ingredient compatibility
-- Style preferences
-- Occasions or moods
+Based on their query, recommend 3-5 cocktails that best match. Consider flavor profiles, ingredients, style, and occasion.
 
-Respond with ONLY a JSON array of cocktail names in order of relevance. For example:
-["Mai Tai", "Daiquiri", "Mojito"]
-
-Do not include any other text or explanation.`;
+Respond ONLY with a JSON array of exact cocktail names:
+["Recipe Name 1", "Recipe Name 2", "Recipe Name 3"]`;
 
             // Use proxy server to avoid CORS issues
             const proxyUrl = 'http://localhost:3000/api/messages';
