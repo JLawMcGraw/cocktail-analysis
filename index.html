@@ -503,8 +503,8 @@
         }
         .inventory-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 15px;
             margin-top: 20px;
         }
         .inventory-item {
@@ -543,6 +543,21 @@
             font-style: italic;
             margin-top: 6px;
             line-height: 1.3;
+        }
+        .inventory-tasting-profile {
+            font-size: 0.8em;
+            color: #555;
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 5px;
+            line-height: 1.4;
+        }
+        .inventory-tasting-profile div {
+            margin-bottom: 3px;
+        }
+        .inventory-tasting-profile strong {
+            color: #333;
         }
         .inventory-remove-btn {
             background: #dc3545;
@@ -956,28 +971,53 @@
                 // Handle both old string format and new object format
                 const isObject = typeof item === 'object';
                 const name = isObject ? item.Name : item;
-                const type = isObject ? item.Type : '';
-                const distillery = isObject ? item.Distillery : '';
-                const abv = isObject ? item.ABV : '';
-                const tastingNotes = isObject ? item['Tasting Notes'] : '';
 
                 html += '<div class="inventory-item-rich">';
                 html += '<div class="inventory-item-details">';
                 html += '<div class="inventory-item-name">' + escapeHtml(name) + '</div>';
 
-                // Secondary info line
-                const secondaryInfo = [];
-                if (type) secondaryInfo.push(escapeHtml(type));
-                if (distillery) secondaryInfo.push(escapeHtml(distillery));
-                if (abv) secondaryInfo.push(escapeHtml(abv) + '%');
+                if (isObject) {
+                    // Line 1: Type and Classification
+                    const line1 = [];
+                    if (item['Liquor Type']) line1.push(escapeHtml(item['Liquor Type']));
+                    if (item['Detailed Spirit Classification']) line1.push(escapeHtml(item['Detailed Spirit Classification']));
+                    if (line1.length > 0) {
+                        html += '<div class="inventory-item-secondary">' + line1.join(' • ') + '</div>';
+                    }
 
-                if (secondaryInfo.length > 0) {
-                    html += '<div class="inventory-item-secondary">' + secondaryInfo.join(' • ') + '</div>';
-                }
+                    // Line 2: Location, ABV, Age
+                    const line2 = [];
+                    if (item['Distillery Location']) line2.push(escapeHtml(item['Distillery Location']));
+                    if (item['ABV (%)']) line2.push(escapeHtml(item['ABV (%)']) + '%');
+                    if (item['Age Statement or Barrel Finish']) line2.push(escapeHtml(item['Age Statement or Barrel Finish']));
+                    if (line2.length > 0) {
+                        html += '<div class="inventory-item-secondary">' + line2.join(' • ') + '</div>';
+                    }
 
-                // Tasting notes
-                if (tastingNotes) {
-                    html += '<div class="inventory-item-notes">' + escapeHtml(tastingNotes) + '</div>';
+                    // Distillation Method
+                    if (item['Distillation Method']) {
+                        html += '<div class="inventory-item-secondary">Method: ' + escapeHtml(item['Distillation Method']) + '</div>';
+                    }
+
+                    // Tasting Profile
+                    if (item['Profile (Nose)'] || item.Palate || item.Finish) {
+                        html += '<div class="inventory-tasting-profile">';
+                        if (item['Profile (Nose)']) {
+                            html += '<div><strong>Nose:</strong> ' + escapeHtml(item['Profile (Nose)']) + '</div>';
+                        }
+                        if (item.Palate) {
+                            html += '<div><strong>Palate:</strong> ' + escapeHtml(item.Palate) + '</div>';
+                        }
+                        if (item.Finish) {
+                            html += '<div><strong>Finish:</strong> ' + escapeHtml(item.Finish) + '</div>';
+                        }
+                        html += '</div>';
+                    }
+
+                    // Additional Notes
+                    if (item['Additional Notes']) {
+                        html += '<div class="inventory-item-notes">📝 ' + escapeHtml(item['Additional Notes']) + '</div>';
+                    }
                 }
 
                 html += '</div>';
@@ -1033,15 +1073,21 @@
                 return;
             }
 
-            // Create a bottle object with name and empty metadata
+            // Create a bottle object with name and empty metadata for all 12 columns
             // User can add details via CSV or future enhancement
             const newBottle = {
-                Name: newItem,
-                Type: '',
-                Distillery: '',
-                ABV: '',
-                'Tasting Notes': '',
-                'Stock Number': 1
+                'Liquor Type': '',
+                'Name': newItem,
+                'Stock Number': 1,
+                'Detailed Spirit Classification': '',
+                'Distillation Method': '',
+                'ABV (%)': '',
+                'Distillery Location': '',
+                'Age Statement or Barrel Finish': '',
+                'Additional Notes': '',
+                'Profile (Nose)': '',
+                'Palate': '',
+                'Finish': ''
             };
 
             APP.editableInventory.push(newBottle);
@@ -1102,33 +1148,39 @@
 
         // Export inventory as CSV
         function exportInventory() {
-            // CSV header with all columns
-            const header = 'Name,Type,Distillery,ABV,Tasting Notes,Stock Number\n';
+            // CSV header with all 12 columns matching user's format
+            const header = 'Liquor Type,Name,Stock Number,Detailed Spirit Classification,Distillation Method,ABV (%),Distillery Location,Age Statement or Barrel Finish,Additional Notes,Profile (Nose),Palate,Finish\n';
+
+            // Helper to escape CSV values
+            const escapeCsv = val => {
+                if (!val && val !== 0) return '';
+                const str = String(val);
+                if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                    return '"' + str.replace(/"/g, '""') + '"';
+                }
+                return str;
+            };
 
             // Convert inventory items to CSV rows
             const rows = APP.editableInventory.map(item => {
                 if (typeof item === 'object') {
-                    // Escape quotes and commas in CSV values
-                    const escapeCsv = val => {
-                        if (!val) return '';
-                        const str = String(val);
-                        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-                            return '"' + str.replace(/"/g, '""') + '"';
-                        }
-                        return str;
-                    };
-
                     return [
+                        escapeCsv(item['Liquor Type'] || ''),
                         escapeCsv(item.Name || ''),
-                        escapeCsv(item.Type || ''),
-                        escapeCsv(item.Distillery || ''),
-                        escapeCsv(item.ABV || ''),
-                        escapeCsv(item['Tasting Notes'] || ''),
-                        escapeCsv(item['Stock Number'] || 1)
+                        escapeCsv(item['Stock Number'] || 1),
+                        escapeCsv(item['Detailed Spirit Classification'] || ''),
+                        escapeCsv(item['Distillation Method'] || ''),
+                        escapeCsv(item['ABV (%)'] || ''),
+                        escapeCsv(item['Distillery Location'] || ''),
+                        escapeCsv(item['Age Statement or Barrel Finish'] || ''),
+                        escapeCsv(item['Additional Notes'] || ''),
+                        escapeCsv(item['Profile (Nose)'] || ''),
+                        escapeCsv(item.Palate || ''),
+                        escapeCsv(item.Finish || '')
                     ].join(',');
                 } else {
                     // Old string format - just export name
-                    return `${item},,,,,1`;
+                    return `,${item},1,,,,,,,,,`;
                 }
             });
 
@@ -1285,17 +1337,23 @@
 
             setTimeout(function() {
                 try {
-                    // Populate editable inventory from uploaded data - PRESERVE ALL COLUMNS
+                    // Populate editable inventory from uploaded data - PRESERVE ALL 12 COLUMNS
                     APP.editableInventory = APP.inventoryData
                         .filter(item => item['Stock Number'] > 0)
                         .map(item => ({
-                            Name: item.Name,
-                            Type: item.Type || '',
-                            Distillery: item.Distillery || '',
-                            ABV: item.ABV || '',
-                            'Tasting Notes': item['Tasting Notes'] || '',
+                            'Liquor Type': item['Liquor Type'] || '',
+                            'Name': item.Name || '',
                             'Stock Number': item['Stock Number'] || 1,
-                            // Preserve any other columns
+                            'Detailed Spirit Classification': item['Detailed Spirit Classification'] || '',
+                            'Distillation Method': item['Distillation Method'] || '',
+                            'ABV (%)': item['ABV (%)'] || '',
+                            'Distillery Location': item['Distillery Location'] || '',
+                            'Age Statement or Barrel Finish': item['Age Statement or Barrel Finish'] || '',
+                            'Additional Notes': item['Additional Notes'] || '',
+                            'Profile (Nose)': item['Profile (Nose)'] || '',
+                            'Palate': item.Palate || '',
+                            'Finish': item.Finish || '',
+                            // Preserve any other columns not explicitly listed
                             ...item
                         }));
                     saveInventory();
