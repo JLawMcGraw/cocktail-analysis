@@ -943,10 +943,18 @@
             <!-- Page: Favorites -->
             <div id="tab-favorites" class="tab-content">
                 <div class="page-header">
-                    <h2 class="page-title">Favorites</h2>
+                    <h2 class="page-title">My Collection</h2>
                     <p class="page-subtitle">Your saved cocktails and history</p>
                 </div>
-                <div id="favoritesSection" class="favorites-section"></div>
+
+                <!-- Sub-tabs for Favorites -->
+                <div class="action-buttons" style="margin-bottom: 24px;">
+                    <button class="action-btn active" id="showFavoritesBtn">❤️ Favorites</button>
+                    <button class="action-btn" id="showMadeThisBtn">✓ Made This</button>
+                </div>
+
+                <div id="favoritesListSection"></div>
+                <div id="madeThisListSection" style="display: none;"></div>
             </div>
 
             <!-- Page: AI Assistant -->
@@ -1008,7 +1016,7 @@
             apiKey: null,
             conversationHistory: [],
             favorites: new Set(),
-            history: {},  // { recipeName: { madeDates: [], rating: 0, notes: '' } }
+            history: {},  // { recipeName: { hasMade: false, rating: 0, notes: '' } }
             editableInventory: []
         };
 
@@ -1056,6 +1064,9 @@
             // Setup tab navigation
             setupTabs();
 
+            // Setup favorites sub-tabs
+            setupFavoritesSubTabs();
+
             // Load API key from localStorage
             loadApiKey();
 
@@ -1079,6 +1090,29 @@
         }
 
         // ===== TAB NAVIGATION =====
+
+        function setupFavoritesSubTabs() {
+            const showFavoritesBtn = document.getElementById('showFavoritesBtn');
+            const showMadeThisBtn = document.getElementById('showMadeThisBtn');
+
+            if (showFavoritesBtn) {
+                showFavoritesBtn.addEventListener('click', function() {
+                    showFavoritesBtn.classList.add('active');
+                    showMadeThisBtn.classList.remove('active');
+                    document.getElementById('favoritesListSection').style.display = 'block';
+                    document.getElementById('madeThisListSection').style.display = 'none';
+                });
+            }
+
+            if (showMadeThisBtn) {
+                showMadeThisBtn.addEventListener('click', function() {
+                    showMadeThisBtn.classList.add('active');
+                    showFavoritesBtn.classList.remove('active');
+                    document.getElementById('favoritesListSection').style.display = 'none';
+                    document.getElementById('madeThisListSection').style.display = 'block';
+                });
+            }
+        }
 
         function setupTabs() {
             const tabs = document.querySelectorAll('.sidebar-nav-link');
@@ -1161,21 +1195,23 @@
             updateFavoriteButton(recipeName);
         }
 
-        // Mark recipe as made
+        // Toggle "Made This" status
         function markAsMade(recipeName) {
             if (!APP.history[recipeName]) {
                 APP.history[recipeName] = {
-                    madeDates: [],
+                    hasMade: false,
                     rating: 0,
                     notes: ''
                 };
             }
 
-            APP.history[recipeName].madeDates.push(new Date().toISOString());
+            // Toggle the made status
+            APP.history[recipeName].hasMade = !APP.history[recipeName].hasMade;
             saveHistory();
 
-            // Update display
-            updateMadeThisSection(recipeName);
+            // Update displays
+            displayFavorites();
+            updateMadeThisButton(recipeName);
         }
 
         // Set rating
@@ -1229,38 +1265,44 @@
             }
         }
 
-        // Update made this section
-        function updateMadeThisSection(recipeName) {
-            const madeSection = document.getElementById('madeThisInfo');
-            if (madeSection && APP.history[recipeName]) {
-                const history = APP.history[recipeName];
-                const count = history.madeDates.length;
-                const lastMade = history.madeDates.length > 0
-                    ? new Date(history.madeDates[history.madeDates.length - 1]).toLocaleDateString()
-                    : 'Never';
-
-                madeSection.innerHTML = `<strong>Made ${count} time${count !== 1 ? 's' : ''}</strong><br>Last: ${lastMade}`;
+        // Update made this button in modal
+        function updateMadeThisButton(recipeName) {
+            const madeBtn = document.getElementById('madeThisBtn');
+            if (madeBtn && APP.history[recipeName]) {
+                const hasMade = APP.history[recipeName].hasMade;
+                madeBtn.textContent = hasMade ? '✓ Made This' : '✓ Mark as Made';
+                madeBtn.style.background = hasMade ? 'var(--success)' : 'var(--primary)';
             }
         }
 
         // Display favorites section
         function displayFavorites() {
-            if (APP.favorites.size === 0) {
-                elements.favoritesSection.style.display = 'none';
-                return;
-            }
-
             const allRecipes = APP.allResults ?
                 APP.allResults.perfect.concat(APP.allResults.veryGood, APP.allResults.good) : [];
 
-            let html = '<div class="search-title">❤️ Your Favorites</div>';
-            html += '<div style="margin-bottom: 20px; opacity: 0.95;">Quick access to your saved recipes</div>';
+            // Display Favorites List
+            displayFavoritesList(allRecipes);
+
+            // Display Made This List
+            displayMadeThisList(allRecipes);
+        }
+
+        // Display favorites list
+        function displayFavoritesList(allRecipes) {
+            const favoritesListSection = document.getElementById('favoritesListSection');
+            if (!favoritesListSection) return;
+
+            if (APP.favorites.size === 0) {
+                favoritesListSection.innerHTML = '<div class="card"><p style="color: var(--text-secondary);">No favorites yet. Click the heart on any recipe to add it here!</p></div>';
+                return;
+            }
 
             const favoriteRecipes = allRecipes.filter(r => APP.favorites.has(r.name));
 
+            let html = '';
             if (favoriteRecipes.length === 0) {
-                html += '<div style="background: rgba(255,255,255,0.9); color: #333; padding: 20px; border-radius: 10px;">';
-                html += 'You have favorites saved, but they\'re not in your current recipe collection.';
+                html += '<div class="card">';
+                html += '<p style="color: var(--text-secondary);">You have favorites saved, but they\'re not in your current recipe collection.</p>';
                 html += '</div>';
             } else {
                 favoriteRecipes.forEach(function(recipe) {
@@ -1272,11 +1314,52 @@
                 });
             }
 
-            elements.favoritesSection.innerHTML = html;
-            elements.favoritesSection.style.display = 'block';
+            favoritesListSection.innerHTML = html;
 
             // Add click handlers
-            elements.favoritesSection.querySelectorAll('.recipe-item').forEach(function(item) {
+            favoritesListSection.querySelectorAll('.recipe-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    const category = this.dataset.category;
+                    const index = parseInt(this.dataset.index);
+                    showRecipe(category, index);
+                });
+            });
+        }
+
+        // Display made this list
+        function displayMadeThisList(allRecipes) {
+            const madeThisListSection = document.getElementById('madeThisListSection');
+            if (!madeThisListSection) return;
+
+            // Get all recipes marked as made
+            const madeRecipeNames = Object.keys(APP.history).filter(name => APP.history[name].hasMade);
+
+            if (madeRecipeNames.length === 0) {
+                madeThisListSection.innerHTML = '<div class="card"><p style="color: var(--text-secondary);">No recipes marked yet. Click "Made This" on any recipe to track it here!</p></div>';
+                return;
+            }
+
+            const madeRecipes = allRecipes.filter(r => madeRecipeNames.includes(r.name));
+
+            let html = '';
+            if (madeRecipes.length === 0) {
+                html += '<div class="card">';
+                html += '<p style="color: var(--text-secondary);">You have recipes marked as made, but they\'re not in your current recipe collection.</p>';
+                html += '</div>';
+            } else {
+                madeRecipes.forEach(function(recipe) {
+                    const category = APP.allResults.perfect.includes(recipe) ? 'perfect' :
+                                   APP.allResults.veryGood.includes(recipe) ? 'veryGood' : 'good';
+                    const index = APP.allResults[category].indexOf(recipe);
+
+                    html += createRecipeCard(recipe, category, index);
+                });
+            }
+
+            madeThisListSection.innerHTML = html;
+
+            // Add click handlers
+            madeThisListSection.querySelectorAll('.recipe-item').forEach(function(item) {
                 item.addEventListener('click', function() {
                     const category = this.dataset.category;
                     const index = parseInt(this.dataset.index);
@@ -2405,7 +2488,9 @@ RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
             if (!recipe) return;
 
             const isFavorite = APP.favorites.has(recipe.name);
-            const history = APP.history[recipe.name] || { madeDates: [], rating: 0, notes: '' };
+            // Handle old data format (madeDates) and new format (hasMade)
+            const history = APP.history[recipe.name] || { hasMade: false, rating: 0, notes: '' };
+            const hasMade = history.hasMade || (history.madeDates && history.madeDates.length > 0) || false;
 
             let html = '<div style="display: flex; justify-content: space-between; align-items: start;">';
             html += '<div class="modal-title">' + escapeHtml(recipe.name) + '</div>';
@@ -2418,34 +2503,27 @@ RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
 
             // Action buttons
             html += '<div class="action-buttons">';
-            html += '<button id="madeThisBtn" class="action-btn" data-recipe-name="' + escapeHtml(recipe.name) + '">✓ Made This</button>';
+            const madeText = hasMade ? '✓ Made This' : '✓ Mark as Made';
+            const madeStyle = hasMade ? 'background: var(--success);' : '';
+            html += '<button id="madeThisBtn" class="action-btn" style="' + madeStyle + '" data-recipe-name="' + escapeHtml(recipe.name) + '">' + madeText + '</button>';
             html += '</div>';
 
-            // History section
-            if (history.madeDates.length > 0 || history.rating > 0 || history.notes) {
-                html += '<div class="made-this-section">';
-                html += '<div id="madeThisInfo">';
-                const count = history.madeDates.length;
-                const lastMade = history.madeDates.length > 0
-                    ? new Date(history.madeDates[history.madeDates.length - 1]).toLocaleDateString()
-                    : 'Never';
-                html += `<strong>Made ${count} time${count !== 1 ? 's' : ''}</strong><br>Last: ${lastMade}`;
-                html += '</div>';
+            // Always show rating and notes section
+            html += '<div class="made-this-section">';
 
-                // Rating
-                html += '<div style="margin-top: 10px;"><strong>Your Rating:</strong></div>';
-                html += '<div id="ratingStars" class="rating-stars" data-recipe-name="' + escapeHtml(recipe.name) + '">';
-                for (let i = 1; i <= 5; i++) {
-                    html += '<span class="' + (i <= history.rating ? 'filled' : '') + '" data-rating="' + i + '">★</span>';
-                }
-                html += '</div>';
-
-                // Notes
-                html += '<div style="margin-top: 10px;"><strong>Your Notes:</strong></div>';
-                html += '<textarea class="notes-input" id="recipeNotes" placeholder="Add your notes...">' + escapeHtml(history.notes) + '</textarea>';
-                html += '<button id="saveNotesBtn" class="action-btn" style="margin-top: 10px;" data-recipe-name="' + escapeHtml(recipe.name) + '">Save Notes</button>';
-                html += '</div>';
+            // Rating
+            html += '<div style="margin-top: 10px;"><strong>Your Rating:</strong></div>';
+            html += '<div id="ratingStars" class="rating-stars" data-recipe-name="' + escapeHtml(recipe.name) + '">';
+            for (let i = 1; i <= 5; i++) {
+                html += '<span class="' + (i <= history.rating ? 'filled' : '') + '" data-rating="' + i + '">★</span>';
             }
+            html += '</div>';
+
+            // Notes
+            html += '<div style="margin-top: 10px;"><strong>Your Notes:</strong></div>';
+            html += '<textarea class="notes-input" id="recipeNotes" placeholder="Add your notes...">' + escapeHtml(history.notes || '') + '</textarea>';
+            html += '<button id="saveNotesBtn" class="action-btn" style="margin-top: 10px;" data-recipe-name="' + escapeHtml(recipe.name) + '">Save Notes</button>';
+            html += '</div>';
 
             html += '<div class="modal-section"><div class="modal-section-title">📋 Ingredients</div>';
             html += '<div class="modal-section-content"><ul class="ingredient-list">';
