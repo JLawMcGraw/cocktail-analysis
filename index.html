@@ -1402,12 +1402,23 @@
                 return;
             }
 
+            // Check if analysis has been run
+            if (!APP.allResults || allRecipes.length === 0) {
+                let html = '<div class="card">';
+                html += '<p style="color: var(--text-secondary); margin-bottom: 12px;">You have <strong>' + APP.favorites.size + ' favorite(s)</strong> saved!</p>';
+                html += '<p style="color: var(--text-secondary);">Run "Analyze My Bar" to see them here.</p>';
+                html += '</div>';
+                favoritesListSection.innerHTML = html;
+                return;
+            }
+
             const favoriteRecipes = allRecipes.filter(r => APP.favorites.has(r.name));
 
             let html = '';
             if (favoriteRecipes.length === 0) {
                 html += '<div class="card">';
-                html += '<p style="color: var(--text-secondary);">You have favorites saved, but they\'re not in your current recipe collection.</p>';
+                html += '<p style="color: var(--text-secondary);">You have ' + APP.favorites.size + ' favorite(s) saved, but they\'re not in your current recipe collection.</p>';
+                html += '<p style="color: var(--text-secondary); margin-top: 8px;">Try uploading different recipes or running analyze again.</p>';
                 html += '</div>';
             } else {
                 favoriteRecipes.forEach(function(recipe) {
@@ -1437,10 +1448,24 @@
             if (!madeThisListSection) return;
 
             // Get all recipes marked as made
-            const madeRecipeNames = Object.keys(APP.history).filter(name => APP.history[name].hasMade);
+            const madeRecipeNames = Object.keys(APP.history).filter(name => {
+                const h = APP.history[name];
+                // Support both old format (madeDates) and new format (hasMade)
+                return h.hasMade || (h.madeDates && h.madeDates.length > 0);
+            });
 
             if (madeRecipeNames.length === 0) {
                 madeThisListSection.innerHTML = '<div class="card"><p style="color: var(--text-secondary);">No recipes marked yet. Click "Made This" on any recipe to track it here!</p></div>';
+                return;
+            }
+
+            // Check if analysis has been run
+            if (!APP.allResults || allRecipes.length === 0) {
+                let html = '<div class="card">';
+                html += '<p style="color: var(--text-secondary); margin-bottom: 12px;">You have <strong>' + madeRecipeNames.length + ' recipe(s)</strong> marked as made!</p>';
+                html += '<p style="color: var(--text-secondary);">Run "Analyze My Bar" to see them here.</p>';
+                html += '</div>';
+                madeThisListSection.innerHTML = html;
                 return;
             }
 
@@ -1449,7 +1474,8 @@
             let html = '';
             if (madeRecipes.length === 0) {
                 html += '<div class="card">';
-                html += '<p style="color: var(--text-secondary);">You have recipes marked as made, but they\'re not in your current recipe collection.</p>';
+                html += '<p style="color: var(--text-secondary);">You have ' + madeRecipeNames.length + ' recipe(s) marked as made, but they\'re not in your current recipe collection.</p>';
+                html += '<p style="color: var(--text-secondary); margin-top: 8px;">Try uploading different recipes or running analyze again.</p>';
                 html += '</div>';
             } else {
                 madeRecipes.forEach(function(recipe) {
