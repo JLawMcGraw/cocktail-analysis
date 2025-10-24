@@ -490,6 +490,7 @@
 • What can I make with my Hamilton 86 that has notes of molasses and caramel?
 • Show me tiki drinks with tropical flavors"></textarea>
                 <button id="aiQueryBtn" class="ai-query-btn">Ask AI 🔮</button>
+                <button id="clearConversationBtn" class="ai-query-btn" style="background: rgba(255,255,255,0.3);">Clear Conversation 🔄</button>
             </div>
 
             <div class="ai-examples">
@@ -536,7 +537,8 @@
             recipeData: [],
             currentInventory: null,
             allResults: null,
-            apiKey: null
+            apiKey: null,
+            conversationHistory: []
         };
 
         // DOM elements
@@ -561,7 +563,8 @@
             toggleApiKey: document.getElementById('toggleApiKey'),
             aiQuery: document.getElementById('aiQuery'),
             aiQueryBtn: document.getElementById('aiQueryBtn'),
-            aiSearchResponse: document.getElementById('aiSearchResponse')
+            aiSearchResponse: document.getElementById('aiSearchResponse'),
+            clearConversationBtn: document.getElementById('clearConversationBtn')
         };
 
         // Initialize event listeners
@@ -575,9 +578,17 @@
             elements.toggleApiKey.addEventListener('click', toggleApiKeyVisibility);
             elements.apiKeyInput.addEventListener('input', saveApiKey);
             elements.aiQueryBtn.addEventListener('click', handleAIQuery);
+            elements.clearConversationBtn.addEventListener('click', clearConversation);
 
             // Load API key from localStorage
             loadApiKey();
+        }
+
+        // Clear conversation history
+        function clearConversation() {
+            APP.conversationHistory = [];
+            elements.aiSearchResponse.innerHTML = '<div style="padding: 20px; color: #333;">Conversation cleared. Start fresh!</div>';
+            elements.aiSearchResponse.classList.add('active');
         }
 
         // Handle inventory file upload
@@ -861,13 +872,17 @@
             elements.aiSearchResponse.innerHTML = '<div style="padding: 20px; text-align: center;">🤔 AI is thinking...</div>';
             elements.aiSearchResponse.classList.add('active');
 
+            // Clear input for next question
+            elements.aiQuery.value = '';
+
             try {
-                const recommendations = await queryClaudeAPI(query);
-                displayAIRecommendations(recommendations);
+                const result = await queryClaudeAPI(query);
+                displayAIRecommendations(result);
             } catch (error) {
                 elements.aiSearchResponse.innerHTML = '<div style="padding: 20px; color: #721c24; background: #f8d7da; border-radius: 8px;">❌ Error: ' + escapeHtml(error.message) + '</div>';
             } finally {
                 elements.aiQueryBtn.disabled = false;
+                elements.aiQuery.focus(); // Focus back on input for easy follow-up
             }
         }
 
@@ -893,14 +908,43 @@
             // Limit to top 30 recipes to reduce token usage
             const topRecipes = recipeList.slice(0, 30);
 
-            const systemPrompt = `You are a bartender helping find cocktails. The user can make these drinks:
+            const systemPrompt = `You are a friendly, knowledgeable bartender helping someone explore cocktails they can make from their home bar.
 
+Available cocktails:
 ${topRecipes.join('\n')}
 
-Based on their query, recommend 3-5 cocktails that best match. Consider flavor profiles, ingredients, style, and occasion.
+Have a natural conversation. Explain your recommendations and why they match the request. Ask follow-up questions if needed. Be enthusiastic but concise.
 
-Respond ONLY with a JSON array of exact cocktail names:
-["Recipe Name 1", "Recipe Name 2", "Recipe Name 3"]`;
+At the end of your response, include a line starting with "RECOMMENDATIONS:" followed by a JSON array of 3-5 exact cocktail names from the list above.
+
+Example:
+Based on what you're looking for, I'd suggest starting with a Mai Tai - it's refreshing, tropical, and really showcases that rum! The Mojito would also be perfect for a hot day with its minty freshness. For something a bit more complex, try the Zombie.
+
+RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
+
+            // Build conversation messages
+            const messages = [];
+
+            // Add system context as first user message
+            if (APP.conversationHistory.length === 0) {
+                messages.push({
+                    role: 'user',
+                    content: systemPrompt
+                });
+                messages.push({
+                    role: 'assistant',
+                    content: "I'm ready to help you find the perfect cocktail! What are you in the mood for?"
+                });
+            }
+
+            // Add conversation history
+            APP.conversationHistory.forEach(msg => messages.push(msg));
+
+            // Add current query
+            messages.push({
+                role: 'user',
+                content: userQuery
+            });
 
             // Use proxy server to avoid CORS issues
             const proxyUrl = 'http://localhost:3000/api/messages';
@@ -914,10 +958,8 @@ Respond ONLY with a JSON array of exact cocktail names:
                 body: JSON.stringify({
                     model: 'claude-3-haiku-20240307',
                     max_tokens: 1024,
-                    messages: [{
-                        role: 'user',
-                        content: systemPrompt + '\n\nUser query: ' + userQuery
-                    }]
+                    system: systemPrompt,
+                    messages: messages
                 })
             });
 
@@ -943,46 +985,82 @@ Respond ONLY with a JSON array of exact cocktail names:
             const data = await response.json();
             const content = data.content[0].text;
 
-            // Parse JSON response
-            try {
-                const recommendations = JSON.parse(content);
-                return recommendations;
-            } catch (e) {
-                // If Claude didn't return valid JSON, try to extract cocktail names
-                console.error('Failed to parse JSON:', content);
-                throw new Error('Unexpected response format from AI');
+            // Save to conversation history
+            APP.conversationHistory.push({
+                role: 'user',
+                content: userQuery
+            });
+            APP.conversationHistory.push({
+                role: 'assistant',
+                content: content
+            });
+
+            // Extract recommendations and explanation
+            let explanation = content;
+            let recommendations = [];
+
+            // Look for RECOMMENDATIONS: line
+            const recoMatch = content.match(/RECOMMENDATIONS:\s*(\[.*?\])/);
+            if (recoMatch) {
+                try {
+                    recommendations = JSON.parse(recoMatch[1]);
+                    // Remove recommendations line from explanation
+                    explanation = content.replace(/RECOMMENDATIONS:.*$/s, '').trim();
+                } catch (e) {
+                    console.error('Failed to parse recommendations:', e);
+                }
             }
+
+            return {
+                explanation: explanation,
+                recommendations: recommendations
+            };
         }
 
         // Display AI recommendations
-        function displayAIRecommendations(recommendations) {
-            if (!recommendations || recommendations.length === 0) {
-                elements.aiSearchResponse.innerHTML = '<div style="padding: 20px;">No recommendations found. Try rephrasing your query.</div>';
-                return;
+        function displayAIRecommendations(result) {
+            const { explanation, recommendations } = result;
+
+            let html = '';
+
+            // Show AI's explanation
+            if (explanation) {
+                html += '<div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; color: #333; line-height: 1.6;">';
+                html += '<div style="font-weight: bold; margin-bottom: 10px; color: #667eea; font-size: 1.1em;">🤖 Bartender AI:</div>';
+                html += '<div style="white-space: pre-wrap;">' + escapeHtml(explanation) + '</div>';
+                html += '</div>';
             }
 
-            const allRecipes = APP.allResults.perfect.concat(APP.allResults.veryGood, APP.allResults.good);
+            // Show clickable recommendations if any
+            if (recommendations && recommendations.length > 0) {
+                const allRecipes = APP.allResults.perfect.concat(APP.allResults.veryGood, APP.allResults.good);
 
-            let html = '<div style="font-weight: bold; margin-bottom: 15px; color: #333;">🎯 AI Recommendations:</div>';
+                html += '<div style="font-weight: bold; margin-bottom: 15px; color: #333; background: white; padding: 15px; border-radius: 10px;">📋 Recommended Cocktails (click to view):</div>';
 
-            recommendations.forEach(function(recipeName, idx) {
-                // Find the recipe (fuzzy match since AI might not get exact name)
-                let recipe = allRecipes.find(r => r.name.toLowerCase() === recipeName.toLowerCase());
+                recommendations.forEach(function(recipeName, idx) {
+                    // Find the recipe (fuzzy match since AI might not get exact name)
+                    let recipe = allRecipes.find(r => r.name.toLowerCase() === recipeName.toLowerCase());
 
-                if (!recipe) {
-                    // Try fuzzy matching
-                    recipe = allRecipes.find(r => areSimilarIngredients(r.name, recipeName, 0.7));
-                }
+                    if (!recipe) {
+                        // Try fuzzy matching
+                        recipe = allRecipes.find(r => areSimilarIngredients(r.name, recipeName, 0.7));
+                    }
 
-                if (recipe) {
-                    const category = APP.allResults.perfect.includes(recipe) ? 'perfect' :
-                                   APP.allResults.veryGood.includes(recipe) ? 'veryGood' : 'good';
-                    const index = APP.allResults[category].indexOf(recipe);
+                    if (recipe) {
+                        const category = APP.allResults.perfect.includes(recipe) ? 'perfect' :
+                                       APP.allResults.veryGood.includes(recipe) ? 'veryGood' : 'good';
+                        const index = APP.allResults[category].indexOf(recipe);
 
-                    html += '<div style="margin-bottom: 5px; color: #666; font-size: 0.9em;">#' + (idx + 1) + '</div>';
-                    html += createRecipeCard(recipe, category, index);
-                }
-            });
+                        html += '<div style="margin-bottom: 5px; color: #666; font-size: 0.9em; background: white; padding: 5px 15px;">#' + (idx + 1) + '</div>';
+                        html += createRecipeCard(recipe, category, index);
+                    }
+                });
+            }
+
+            // Add prompt for follow-up
+            html += '<div style="background: rgba(255,255,255,0.5); padding: 15px; border-radius: 10px; margin-top: 20px; color: #333; font-style: italic; text-align: center;">';
+            html += '💬 Keep chatting! Ask follow-up questions or refine your search.';
+            html += '</div>';
 
             elements.aiSearchResponse.innerHTML = html;
 
