@@ -518,6 +518,31 @@
         }
         .inventory-item-name {
             flex: 1;
+            font-weight: 600;
+        }
+        .inventory-item-rich {
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 8px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .inventory-item-details {
+            flex: 1;
+        }
+        .inventory-item-secondary {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 4px;
+        }
+        .inventory-item-notes {
+            font-size: 0.8em;
+            color: #777;
+            font-style: italic;
+            margin-top: 6px;
+            line-height: 1.3;
         }
         .inventory-remove-btn {
             background: #dc3545;
@@ -528,6 +553,8 @@
             cursor: pointer;
             font-size: 0.9em;
             width: auto;
+            flex-shrink: 0;
+            margin-left: 10px;
         }
         .inventory-remove-btn:hover {
             background: #c82333;
@@ -926,16 +953,42 @@
 
             html += '<div class="inventory-list">';
             APP.editableInventory.forEach(function(item, idx) {
-                html += '<div class="inventory-item">';
-                html += '<div class="inventory-item-name">' + escapeHtml(item) + '</div>';
-                html += '<button class="inventory-remove-btn" onclick="removeIngredient(' + idx + ')">Remove</button>';
+                // Handle both old string format and new object format
+                const isObject = typeof item === 'object';
+                const name = isObject ? item.Name : item;
+                const type = isObject ? item.Type : '';
+                const distillery = isObject ? item.Distillery : '';
+                const abv = isObject ? item.ABV : '';
+                const tastingNotes = isObject ? item['Tasting Notes'] : '';
+
+                html += '<div class="inventory-item-rich">';
+                html += '<div class="inventory-item-details">';
+                html += '<div class="inventory-item-name">' + escapeHtml(name) + '</div>';
+
+                // Secondary info line
+                const secondaryInfo = [];
+                if (type) secondaryInfo.push(escapeHtml(type));
+                if (distillery) secondaryInfo.push(escapeHtml(distillery));
+                if (abv) secondaryInfo.push(escapeHtml(abv) + '%');
+
+                if (secondaryInfo.length > 0) {
+                    html += '<div class="inventory-item-secondary">' + secondaryInfo.join(' • ') + '</div>';
+                }
+
+                // Tasting notes
+                if (tastingNotes) {
+                    html += '<div class="inventory-item-notes">' + escapeHtml(tastingNotes) + '</div>';
+                }
+
+                html += '</div>';
+                html += '<button class="inventory-remove-btn" data-index="' + idx + '">Remove</button>';
                 html += '</div>';
             });
             html += '</div>';
 
             html += '<div class="inventory-add-section">';
-            html += '<input type="text" id="newIngredientInput" class="inventory-add-input" placeholder="Add new ingredient (e.g., Aperol, Campari)">';
-            html += '<button class="inventory-add-btn" onclick="addIngredient()">Add</button>';
+            html += '<input type="text" id="newIngredientInput" class="inventory-add-input" placeholder="Add ingredient name (e.g., Hamilton 86)">';
+            html += '<button class="inventory-add-btn" id="addIngredientBtn">Add</button>';
             html += '</div>';
 
             html += '<div style="margin-top: 20px; background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; text-align: center;">';
@@ -944,6 +997,19 @@
 
             elements.inventoryManager.innerHTML = html;
             elements.inventoryManager.style.display = 'block';
+
+            // Add event listeners
+            const removeButtons = elements.inventoryManager.querySelectorAll('.inventory-remove-btn');
+            removeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    removeIngredient(parseInt(this.getAttribute('data-index')));
+                });
+            });
+
+            const addBtn = document.getElementById('addIngredientBtn');
+            if (addBtn) {
+                addBtn.addEventListener('click', addIngredient);
+            }
         }
 
         // Add ingredient
@@ -956,13 +1022,29 @@
                 return;
             }
 
-            // Check for duplicates
-            if (APP.editableInventory.some(item => item.toLowerCase() === newItem.toLowerCase())) {
+            // Check for duplicates - handle both string and object formats
+            const isDuplicate = APP.editableInventory.some(item => {
+                const itemName = typeof item === 'object' ? item.Name : item;
+                return itemName.toLowerCase() === newItem.toLowerCase();
+            });
+
+            if (isDuplicate) {
                 alert('This ingredient is already in your inventory');
                 return;
             }
 
-            APP.editableInventory.push(newItem);
+            // Create a bottle object with name and empty metadata
+            // User can add details via CSV or future enhancement
+            const newBottle = {
+                Name: newItem,
+                Type: '',
+                Distillery: '',
+                ABV: '',
+                'Tasting Notes': '',
+                'Stock Number': 1
+            };
+
+            APP.editableInventory.push(newBottle);
             saveInventory();
             input.value = '';
 
@@ -973,7 +1055,10 @@
         // Remove ingredient
         function removeIngredient(index) {
             const item = APP.editableInventory[index];
-            if (confirm('Remove "' + item + '" from your bar?')) {
+            // Handle both string and object formats
+            const itemName = typeof item === 'object' ? item.Name : item;
+
+            if (confirm('Remove "' + itemName + '" from your bar?')) {
                 APP.editableInventory.splice(index, 1);
                 saveInventory();
 
@@ -990,10 +1075,22 @@
             }
 
             // Convert editable inventory to the format expected by analysis
-            const fakeInventoryData = APP.editableInventory.map(name => ({
-                Name: name,
-                'Stock Number': 1
-            }));
+            // Handle both string and object formats
+            const fakeInventoryData = APP.editableInventory.map(item => {
+                if (typeof item === 'object') {
+                    // Already an object with all data, ensure Stock Number is set
+                    return {
+                        ...item,
+                        'Stock Number': item['Stock Number'] || 1
+                    };
+                } else {
+                    // Old string format, convert to minimal object
+                    return {
+                        Name: item,
+                        'Stock Number': 1
+                    };
+                }
+            });
 
             const results = runAnalysis(fakeInventoryData, APP.recipeData);
             displayResults(results);
@@ -1005,8 +1102,37 @@
 
         // Export inventory as CSV
         function exportInventory() {
-            const csv = 'Name,Stock Number,Category\n' +
-                APP.editableInventory.map(item => `${item},1,`).join('\n');
+            // CSV header with all columns
+            const header = 'Name,Type,Distillery,ABV,Tasting Notes,Stock Number\n';
+
+            // Convert inventory items to CSV rows
+            const rows = APP.editableInventory.map(item => {
+                if (typeof item === 'object') {
+                    // Escape quotes and commas in CSV values
+                    const escapeCsv = val => {
+                        if (!val) return '';
+                        const str = String(val);
+                        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                            return '"' + str.replace(/"/g, '""') + '"';
+                        }
+                        return str;
+                    };
+
+                    return [
+                        escapeCsv(item.Name || ''),
+                        escapeCsv(item.Type || ''),
+                        escapeCsv(item.Distillery || ''),
+                        escapeCsv(item.ABV || ''),
+                        escapeCsv(item['Tasting Notes'] || ''),
+                        escapeCsv(item['Stock Number'] || 1)
+                    ].join(',');
+                } else {
+                    // Old string format - just export name
+                    return `${item},,,,,1`;
+                }
+            });
+
+            const csv = header + rows.join('\n');
 
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
@@ -1159,10 +1285,19 @@
 
             setTimeout(function() {
                 try {
-                    // Populate editable inventory from uploaded data
+                    // Populate editable inventory from uploaded data - PRESERVE ALL COLUMNS
                     APP.editableInventory = APP.inventoryData
                         .filter(item => item['Stock Number'] > 0)
-                        .map(item => item.Name);
+                        .map(item => ({
+                            Name: item.Name,
+                            Type: item.Type || '',
+                            Distillery: item.Distillery || '',
+                            ABV: item.ABV || '',
+                            'Tasting Notes': item['Tasting Notes'] || '',
+                            'Stock Number': item['Stock Number'] || 1,
+                            // Preserve any other columns
+                            ...item
+                        }));
                     saveInventory();
 
                     const results = runAnalysis(APP.inventoryData, APP.recipeData);
