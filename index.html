@@ -904,6 +904,21 @@
                     <button id="analyzeBtn" class="btn-primary" disabled>Analyze My Bar</button>
                 </div>
 
+                <!-- Backup/Restore Section -->
+                <div class="card" style="margin-top: 24px;">
+                    <h3 style="margin-bottom: 12px; font-size: 1.125rem; font-weight: 600;">💾 Backup & Restore</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 16px;">
+                        Export your data to keep a backup, or import to restore on a new device.
+                    </p>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button id="exportDataBtn" class="btn-secondary btn-sm">⬇️ Export Data</button>
+                        <label for="importDataFile" class="btn-secondary btn-sm" style="margin: 0; display: inline-block;">
+                            ⬆️ Import Data
+                            <input type="file" id="importDataFile" accept=".json" style="display: none;">
+                        </label>
+                    </div>
+                </div>
+
                 <div id="shoppingList" class="shopping-list-section"></div>
             </div>
 
@@ -1061,6 +1076,12 @@
             elements.aiQueryBtn.addEventListener('click', handleAIQuery);
             elements.clearConversationBtn.addEventListener('click', clearConversation);
 
+            // Setup backup/restore
+            const exportDataBtn = document.getElementById('exportDataBtn');
+            const importDataFile = document.getElementById('importDataFile');
+            if (exportDataBtn) exportDataBtn.addEventListener('click', exportAllData);
+            if (importDataFile) importDataFile.addEventListener('change', importAllData);
+
             // Setup tab navigation
             setupTabs();
 
@@ -1087,6 +1108,90 @@
 
             // Check if we have saved data to enable analyze button
             checkReady();
+        }
+
+        // ===== BACKUP & RESTORE =====
+
+        function exportAllData() {
+            const backupData = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                favorites: Array.from(APP.favorites),
+                history: APP.history,
+                inventory: APP.editableInventory,
+                recipes: APP.recipeData,
+                apiKey: APP.apiKey
+            };
+
+            const dataStr = JSON.stringify(backupData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const dateStr = new Date().toISOString().split('T')[0];
+            a.download = `bartender-backup-${dateStr}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            alert('✓ Backup exported successfully!');
+        }
+
+        function importAllData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const backupData = JSON.parse(event.target.result);
+
+                    // Restore favorites
+                    if (backupData.favorites) {
+                        APP.favorites = new Set(backupData.favorites);
+                        localStorage.setItem('cocktail_favorites', JSON.stringify(backupData.favorites));
+                    }
+
+                    // Restore history
+                    if (backupData.history) {
+                        APP.history = backupData.history;
+                        localStorage.setItem('cocktail_history', JSON.stringify(backupData.history));
+                    }
+
+                    // Restore inventory
+                    if (backupData.inventory) {
+                        APP.editableInventory = backupData.inventory;
+                        APP.inventoryData = backupData.inventory;
+                        localStorage.setItem('cocktail_inventory', JSON.stringify(backupData.inventory));
+                    }
+
+                    // Restore recipes
+                    if (backupData.recipes) {
+                        APP.recipeData = backupData.recipes;
+                        localStorage.setItem('cocktail_recipes', JSON.stringify(backupData.recipes));
+                    }
+
+                    // Restore API key (optional)
+                    if (backupData.apiKey) {
+                        APP.apiKey = backupData.apiKey;
+                        localStorage.setItem('cocktail_api_key', backupData.apiKey);
+                    }
+
+                    // Refresh displays
+                    if (APP.editableInventory.length > 0) {
+                        displayInventoryManager();
+                    }
+                    checkReady();
+
+                    alert('✓ Backup restored successfully! All your data has been imported.');
+
+                    // Clear file input
+                    e.target.value = '';
+                } catch (error) {
+                    alert('❌ Error importing backup: ' + error.message);
+                    console.error('Import error:', error);
+                }
+            };
+            reader.readAsText(file);
         }
 
         // ===== TAB NAVIGATION =====
