@@ -2928,14 +2928,15 @@ RECOMMENDATIONS: ["Mai Tai", "Zombie", "Jungle Bird"]`;
                 content: userQuery
             });
 
-            // Use proxy server to avoid CORS issues
-            const proxyUrl = 'http://localhost:3000/api/messages';
+            // Call Anthropic API directly
+            const apiUrl = 'https://api.anthropic.com/v1/messages';
 
-            const response = await fetch(proxyUrl, {
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': APP.apiKey
+                    'x-api-key': APP.apiKey,
+                    'anthropic-version': '2023-06-01'
                 },
                 body: JSON.stringify({
                     model: 'claude-3-haiku-20240307',
@@ -2958,7 +2959,7 @@ RECOMMENDATIONS: ["Mai Tai", "Zombie", "Jungle Bird"]`;
 
                 // Check if it's a connection error
                 if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
-                    throw new Error('Cannot connect to proxy server. Make sure to run: node proxy-server.js');
+                    throw new Error('Cannot connect to Anthropic API. Please check your internet connection and API key.');
                 }
 
                 throw new Error(errorMessage);
