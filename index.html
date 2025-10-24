@@ -978,6 +978,202 @@
             margin-bottom: 0;
         }
 
+        /* Search & Filter Controls */
+        .filter-controls {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .quick-actions-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action-btn {
+            padding: 10px 18px;
+            background: linear-gradient(135deg, var(--coral) 0%, var(--sunset) 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(255, 123, 84, 0.2);
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 123, 84, 0.3);
+        }
+
+        .quick-action-btn.active {
+            background: linear-gradient(135deg, var(--palm) 0%, var(--teal) 100%);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .quick-action-btn-secondary {
+            padding: 10px 18px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .quick-action-btn-secondary:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .search-filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            font-size: 1.25rem;
+            pointer-events: none;
+        }
+
+        .recipe-search-input {
+            width: 100%;
+            padding: 12px 16px 12px 48px;
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            font-size: 0.9375rem;
+            transition: all 0.2s ease;
+            background: var(--bg-secondary);
+        }
+
+        .recipe-search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--bg-primary);
+            box-shadow: 0 0 0 3px rgba(10, 126, 164, 0.1);
+        }
+
+        .sort-select {
+            padding: 12px 16px;
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            font-size: 0.9375rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 200px;
+        }
+
+        .sort-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--bg-primary);
+        }
+
+        .active-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 16px;
+        }
+
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            border-radius: 20px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+        }
+
+        .filter-tag-remove {
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.15s;
+        }
+
+        .filter-tag-remove:hover {
+            transform: scale(1.2);
+        }
+
+        .results-count {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Recently Viewed */
+        .recently-viewed-section {
+            margin-bottom: 32px;
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .recently-viewed-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .recently-viewed-item {
+            background: var(--bg-primary);
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .recently-viewed-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--coral);
+        }
+
+        .recently-viewed-name {
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .recently-viewed-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             :root {
@@ -1067,6 +1263,31 @@
 
             .inventory-add-btn {
                 width: 100%;
+            }
+
+            .search-filter-bar {
+                flex-direction: column;
+            }
+
+            .sort-select {
+                width: 100%;
+                min-width: auto;
+            }
+
+            .quick-actions-bar {
+                gap: 8px;
+            }
+
+            .quick-action-btn,
+            .quick-action-btn-secondary {
+                flex: 1;
+                min-width: calc(50% - 4px);
+                font-size: 0.8125rem;
+                padding: 10px 12px;
+            }
+
+            .recently-viewed-list {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -1187,6 +1408,56 @@
                 <div id="searchResponse" class="search-response"></div>
             </div>
 
+            <!-- Advanced Search & Filter Controls -->
+            <div id="filterControls" class="filter-controls" style="display: none;">
+                <!-- Quick Actions Bar -->
+                <div class="quick-actions-bar">
+                    <button id="randomCocktailBtn" class="quick-action-btn">
+                        🎲 Random Cocktail
+                    </button>
+                    <button id="perfectMatchesBtn" class="quick-action-btn">
+                        ✨ Perfect Matches
+                    </button>
+                    <button id="almostThereBtn" class="quick-action-btn">
+                        🎯 Missing 1 Ingredient
+                    </button>
+                    <button id="clearFiltersBtn" class="quick-action-btn-secondary">
+                        ↺ Clear Filters
+                    </button>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="search-filter-bar">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input
+                            type="text"
+                            id="recipeSearchInput"
+                            class="recipe-search-input"
+                            placeholder="Search recipes by name or ingredient..."
+                        />
+                    </div>
+
+                    <select id="sortSelect" class="sort-select">
+                        <option value="compatibility">Sort by Compatibility</option>
+                        <option value="name-asc">Sort A-Z</option>
+                        <option value="name-desc">Sort Z-A</option>
+                    </select>
+                </div>
+
+                <!-- Active Filters Display -->
+                <div id="activeFilters" class="active-filters" style="display: none;"></div>
+
+                <!-- Results Count -->
+                <div id="resultsCount" class="results-count"></div>
+            </div>
+
+            <!-- Recently Viewed -->
+            <div id="recentlyViewedSection" class="recently-viewed-section" style="display: none;">
+                <h3 class="section-subtitle">👁️ Recently Viewed</h3>
+                <div id="recentlyViewedList" class="recently-viewed-list"></div>
+            </div>
+
             <div id="results"></div>
         </div>
 
@@ -1267,7 +1538,15 @@
             conversationHistory: [],
             favorites: new Set(),
             history: {},  // { recipeName: { hasMade: false, rating: 0, notes: '' } }
-            editableInventory: []
+            editableInventory: [],
+            // Search & Filter state
+            searchQuery: '',
+            activeFilters: {
+                perfectMatches: false,
+                missingOne: false
+            },
+            sortBy: 'compatibility',
+            recentlyViewed: []  // Array of {name, timestamp}
         };
 
         // DOM elements
@@ -1295,7 +1574,19 @@
             aiSearchResponse: document.getElementById('aiSearchResponse'),
             clearConversationBtn: document.getElementById('clearConversationBtn'),
             favoritesSection: document.getElementById('favoritesSection'),
-            inventoryManager: document.getElementById('inventoryManager')
+            inventoryManager: document.getElementById('inventoryManager'),
+            // Search & Filter elements
+            filterControls: document.getElementById('filterControls'),
+            recipeSearchInput: document.getElementById('recipeSearchInput'),
+            sortSelect: document.getElementById('sortSelect'),
+            randomCocktailBtn: document.getElementById('randomCocktailBtn'),
+            perfectMatchesBtn: document.getElementById('perfectMatchesBtn'),
+            almostThereBtn: document.getElementById('almostThereBtn'),
+            clearFiltersBtn: document.getElementById('clearFiltersBtn'),
+            activeFiltersDiv: document.getElementById('activeFilters'),
+            resultsCount: document.getElementById('resultsCount'),
+            recentlyViewedSection: document.getElementById('recentlyViewedSection'),
+            recentlyViewedList: document.getElementById('recentlyViewedList')
         };
 
         // Initialize event listeners
@@ -1323,11 +1614,17 @@
             // Setup favorites sub-tabs
             setupFavoritesSubTabs();
 
+            // Setup search & filter event listeners
+            setupSearchAndFilters();
+
             // Load API key from localStorage
             loadApiKey();
 
             // Load favorites and history
             loadFavoritesAndHistory();
+
+            // Load recently viewed
+            loadRecentlyViewed();
 
             // Load saved inventory if exists
             if (loadSavedInventory()) {
@@ -1343,6 +1640,59 @@
 
             // Check if we have saved data to enable analyze button
             checkReady();
+        }
+
+        // ===== SEARCH & FILTER SETUP =====
+
+        function setupSearchAndFilters() {
+            if (elements.recipeSearchInput) {
+                elements.recipeSearchInput.addEventListener('input', function() {
+                    APP.searchQuery = this.value;
+                    refreshResults();
+                });
+            }
+
+            if (elements.sortSelect) {
+                elements.sortSelect.addEventListener('change', function() {
+                    APP.sortBy = this.value;
+                    refreshResults();
+                });
+            }
+
+            if (elements.randomCocktailBtn) {
+                elements.randomCocktailBtn.addEventListener('click', showRandomCocktail);
+            }
+
+            if (elements.perfectMatchesBtn) {
+                elements.perfectMatchesBtn.addEventListener('click', function() {
+                    APP.activeFilters.perfectMatches = !APP.activeFilters.perfectMatches;
+                    refreshResults();
+                });
+            }
+
+            if (elements.almostThereBtn) {
+                elements.almostThereBtn.addEventListener('click', function() {
+                    APP.activeFilters.missingOne = !APP.activeFilters.missingOne;
+                    refreshResults();
+                });
+            }
+
+            if (elements.clearFiltersBtn) {
+                elements.clearFiltersBtn.addEventListener('click', clearAllFilters);
+            }
+        }
+
+        function loadRecentlyViewed() {
+            try {
+                const saved = localStorage.getItem('cocktail_recentlyViewed');
+                if (saved) {
+                    APP.recentlyViewed = JSON.parse(saved);
+                    displayRecentlyViewed();
+                }
+            } catch (error) {
+                console.error('Error loading recently viewed:', error);
+                APP.recentlyViewed = [];
+            }
         }
 
         // ===== BACKUP & RESTORE =====
@@ -2221,9 +2571,10 @@
                     }
 
                     const results = runAnalysis(inventoryToUse, APP.recipeData);
-                    displayResults(results);
+                    refreshResults();  // Display with filters
                     displayFavorites();
                     displayInventoryManager();
+                    displayRecentlyViewed();
                     generateShoppingList(results);
                     setupSearch();
 
@@ -2778,6 +3129,207 @@ RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
         }
 
         // Display results
+        // Search & Filter Functions
+        function applySearchAndFilters(results) {
+            let allRecipes = [
+                ...results.perfect.map(r => ({...r, category: 'perfect'})),
+                ...results.veryGood.map(r => ({...r, category: 'veryGood'})),
+                ...results.good.map(r => ({...r, category: 'good'}))
+            ];
+
+            // Apply search query
+            if (APP.searchQuery.trim() !== '') {
+                const query = APP.searchQuery.toLowerCase();
+                allRecipes = allRecipes.filter(recipe => {
+                    // Search in recipe name
+                    if (recipe.name.toLowerCase().includes(query)) return true;
+                    // Search in ingredients
+                    if (recipe.ingredients && recipe.ingredients.some(ing =>
+                        ing.toLowerCase().includes(query))) return true;
+                    return false;
+                });
+            }
+
+            // Apply perfect matches filter
+            if (APP.activeFilters.perfectMatches) {
+                allRecipes = allRecipes.filter(r => r.missing.length === 0);
+            }
+
+            // Apply missing 1 ingredient filter
+            if (APP.activeFilters.missingOne) {
+                allRecipes = allRecipes.filter(r => r.missing.length === 1);
+            }
+
+            // Apply sorting
+            allRecipes = sortRecipes(allRecipes);
+
+            // Reorganize back into categories
+            return {
+                perfect: allRecipes.filter(r => r.category === 'perfect'),
+                veryGood: allRecipes.filter(r => r.category === 'veryGood'),
+                good: allRecipes.filter(r => r.category === 'good')
+            };
+        }
+
+        function sortRecipes(recipes) {
+            const sorted = [...recipes];
+            switch (APP.sortBy) {
+                case 'name-asc':
+                    return sorted.sort((a, b) => a.name.localeCompare(b.name));
+                case 'name-desc':
+                    return sorted.sort((a, b) => b.name.localeCompare(a.name));
+                case 'compatibility':
+                default:
+                    return sorted.sort((a, b) => b.compatibility - a.compatibility);
+            }
+        }
+
+        function updateFilterUI() {
+            // Show/hide filter controls
+            if (APP.allResults) {
+                elements.filterControls.style.display = 'block';
+            }
+
+            // Update active filters display
+            const activeFiltersArray = [];
+            if (APP.searchQuery.trim() !== '') {
+                activeFiltersArray.push('Search: ' + APP.searchQuery);
+            }
+            if (APP.activeFilters.perfectMatches) {
+                activeFiltersArray.push('Perfect Matches');
+            }
+            if (APP.activeFilters.missingOne) {
+                activeFiltersArray.push('Missing 1 Ingredient');
+            }
+
+            if (activeFiltersArray.length > 0) {
+                let html = '';
+                activeFiltersArray.forEach(filter => {
+                    html += '<span class="filter-tag">' + escapeHtml(filter) + '</span>';
+                });
+                elements.activeFiltersDiv.innerHTML = html;
+                elements.activeFiltersDiv.style.display = 'flex';
+            } else {
+                elements.activeFiltersDiv.style.display = 'none';
+            }
+
+            // Update button active states
+            elements.perfectMatchesBtn.classList.toggle('active', APP.activeFilters.perfectMatches);
+            elements.almostThereBtn.classList.toggle('active', APP.activeFilters.missingOne);
+        }
+
+        function refreshResults() {
+            if (!APP.allResults) return;
+
+            const filteredResults = applySearchAndFilters(APP.allResults);
+            displayResults(filteredResults);
+            updateFilterUI();
+        }
+
+        function clearAllFilters() {
+            APP.searchQuery = '';
+            APP.activeFilters.perfectMatches = false;
+            APP.activeFilters.missingOne = false;
+            APP.sortBy = 'compatibility';
+            elements.recipeSearchInput.value = '';
+            elements.sortSelect.value = 'compatibility';
+            refreshResults();
+        }
+
+        function showRandomCocktail() {
+            if (!APP.allResults) return;
+
+            const allRecipes = [
+                ...APP.allResults.perfect,
+                ...APP.allResults.veryGood,
+                ...APP.allResults.good
+            ];
+
+            if (allRecipes.length === 0) return;
+
+            const random = allRecipes[Math.floor(Math.random() * allRecipes.length)];
+
+            // Find category and index
+            let category, index;
+            if (APP.allResults.perfect.includes(random)) {
+                category = 'perfect';
+                index = APP.allResults.perfect.indexOf(random);
+            } else if (APP.allResults.veryGood.includes(random)) {
+                category = 'veryGood';
+                index = APP.allResults.veryGood.indexOf(random);
+            } else {
+                category = 'good';
+                index = APP.allResults.good.indexOf(random);
+            }
+
+            showRecipe(category, index);
+        }
+
+        // Recently Viewed Functions
+        function addToRecentlyViewed(recipeName) {
+            // Remove if already exists
+            APP.recentlyViewed = APP.recentlyViewed.filter(item => item.name !== recipeName);
+
+            // Add to beginning
+            APP.recentlyViewed.unshift({
+                name: recipeName,
+                timestamp: new Date().getTime()
+            });
+
+            // Keep only last 6
+            APP.recentlyViewed = APP.recentlyViewed.slice(0, 6);
+
+            // Save to localStorage
+            localStorage.setItem('cocktail_recentlyViewed', JSON.stringify(APP.recentlyViewed));
+
+            displayRecentlyViewed();
+        }
+
+        function displayRecentlyViewed() {
+            if (APP.recentlyViewed.length === 0) {
+                elements.recentlyViewedSection.style.display = 'none';
+                return;
+            }
+
+            elements.recentlyViewedSection.style.display = 'block';
+
+            let html = '';
+            APP.recentlyViewed.forEach(item => {
+                const timeAgo = getTimeAgo(item.timestamp);
+                html += '<div class="recently-viewed-item" onclick="openRecentRecipe(\'' + escapeHtml(item.name).replace(/'/g, "\\'") + '\')">';
+                html += '<div class="recently-viewed-name">' + escapeHtml(item.name) + '</div>';
+                html += '<div class="recently-viewed-time">' + timeAgo + '</div>';
+                html += '</div>';
+            });
+
+            elements.recentlyViewedList.innerHTML = html;
+        }
+
+        function getTimeAgo(timestamp) {
+            const seconds = Math.floor((new Date().getTime() - timestamp) / 1000);
+            if (seconds < 60) return 'Just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return minutes + 'm ago';
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return hours + 'h ago';
+            const days = Math.floor(hours / 24);
+            return days + 'd ago';
+        }
+
+        function openRecentRecipe(recipeName) {
+            if (!APP.allResults) return;
+
+            // Find the recipe
+            const categories = ['perfect', 'veryGood', 'good'];
+            for (const cat of categories) {
+                const index = APP.allResults[cat].findIndex(r => r.name === recipeName);
+                if (index !== -1) {
+                    showRecipe(cat, index);
+                    return;
+                }
+            }
+        }
+
         function displayResults(results) {
             const total = results.perfect.length + results.veryGood.length + results.good.length;
 
@@ -2824,6 +3376,11 @@ RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
             }
 
             elements.resultsDiv.innerHTML = html;
+
+            // Update results count
+            if (elements.resultsCount) {
+                elements.resultsCount.textContent = 'Showing ' + total + ' recipe' + (total !== 1 ? 's' : '');
+            }
 
             // Add click handlers
             document.querySelectorAll('.recipe-item').forEach(function(item) {
@@ -2917,6 +3474,9 @@ RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
 
             elements.modalBody.innerHTML = html;
             elements.modal.classList.add('active');
+
+            // Add to recently viewed
+            addToRecentlyViewed(recipe.name);
 
             // Add event listeners after HTML is inserted
             const favoriteBtn = document.getElementById('favoriteBtn');
