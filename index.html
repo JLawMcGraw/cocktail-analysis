@@ -446,6 +446,148 @@
             margin-left: 20px;
             margin-top: 5px;
         }
+        .favorite-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 5px 10px;
+            transition: transform 0.2s;
+            width: auto;
+        }
+        .favorite-btn:hover {
+            transform: scale(1.2);
+        }
+        .favorite-btn.active {
+            color: #ff6b6b;
+        }
+        .made-this-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .rating-stars {
+            font-size: 1.5em;
+            cursor: pointer;
+            user-select: none;
+        }
+        .rating-stars span {
+            color: #ddd;
+            transition: color 0.2s;
+        }
+        .rating-stars span.filled {
+            color: #ffc107;
+        }
+        .rating-stars span:hover,
+        .rating-stars span:hover ~ span {
+            color: #ffc107;
+        }
+        .notes-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+        }
+        .inventory-manager {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            color: white;
+            display: none;
+        }
+        .inventory-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .inventory-item {
+            background: rgba(255,255,255,0.95);
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .inventory-item-name {
+            flex: 1;
+        }
+        .inventory-remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            width: auto;
+        }
+        .inventory-remove-btn:hover {
+            background: #c82333;
+        }
+        .inventory-add-section {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .inventory-add-input {
+            width: calc(100% - 120px);
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .inventory-add-btn {
+            padding: 10px 20px;
+            background: white;
+            color: #f5576c;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            width: auto;
+        }
+        .favorites-section {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            color: white;
+            display: none;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .action-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            width: auto;
+            font-size: 0.95em;
+        }
+        .action-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        .action-btn.active {
+            background: #667eea;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -468,6 +610,10 @@
 
             <button id="analyzeBtn" disabled>Analyze My Bar 🎯</button>
         </div>
+
+        <div id="favoritesSection" class="favorites-section"></div>
+
+        <div id="inventoryManager" class="inventory-manager"></div>
 
         <div id="shoppingList" class="shopping-list-section"></div>
 
@@ -538,7 +684,10 @@
             currentInventory: null,
             allResults: null,
             apiKey: null,
-            conversationHistory: []
+            conversationHistory: [],
+            favorites: new Set(),
+            history: {},  // { recipeName: { madeDates: [], rating: 0, notes: '' } }
+            editableInventory: []
         };
 
         // DOM elements
@@ -564,7 +713,9 @@
             aiQuery: document.getElementById('aiQuery'),
             aiQueryBtn: document.getElementById('aiQueryBtn'),
             aiSearchResponse: document.getElementById('aiSearchResponse'),
-            clearConversationBtn: document.getElementById('clearConversationBtn')
+            clearConversationBtn: document.getElementById('clearConversationBtn'),
+            favoritesSection: document.getElementById('favoritesSection'),
+            inventoryManager: document.getElementById('inventoryManager')
         };
 
         // Initialize event listeners
@@ -582,6 +733,288 @@
 
             // Load API key from localStorage
             loadApiKey();
+
+            // Load favorites and history
+            loadFavoritesAndHistory();
+        }
+
+        // ===== FAVORITES & HISTORY FUNCTIONS =====
+
+        // Load favorites and history from localStorage
+        function loadFavoritesAndHistory() {
+            const savedFavorites = localStorage.getItem('cocktail_favorites');
+            const savedHistory = localStorage.getItem('cocktail_history');
+
+            if (savedFavorites) {
+                APP.favorites = new Set(JSON.parse(savedFavorites));
+            }
+
+            if (savedHistory) {
+                APP.history = JSON.parse(savedHistory);
+            }
+        }
+
+        // Save favorites to localStorage
+        function saveFavorites() {
+            localStorage.setItem('cocktail_favorites', JSON.stringify(Array.from(APP.favorites)));
+        }
+
+        // Save history to localStorage
+        function saveHistory() {
+            localStorage.setItem('cocktail_history', JSON.stringify(APP.history));
+        }
+
+        // Toggle favorite
+        function toggleFavorite(recipeName) {
+            if (APP.favorites.has(recipeName)) {
+                APP.favorites.delete(recipeName);
+            } else {
+                APP.favorites.add(recipeName);
+            }
+            saveFavorites();
+            displayFavorites();
+
+            // Update the heart icon if modal is open
+            updateFavoriteButton(recipeName);
+        }
+
+        // Mark recipe as made
+        function markAsMade(recipeName) {
+            if (!APP.history[recipeName]) {
+                APP.history[recipeName] = {
+                    madeDates: [],
+                    rating: 0,
+                    notes: ''
+                };
+            }
+
+            APP.history[recipeName].madeDates.push(new Date().toISOString());
+            saveHistory();
+
+            // Update display
+            updateMadeThisSection(recipeName);
+        }
+
+        // Set rating
+        function setRating(recipeName, rating) {
+            if (!APP.history[recipeName]) {
+                APP.history[recipeName] = {
+                    madeDates: [],
+                    rating: 0,
+                    notes: ''
+                };
+            }
+
+            APP.history[recipeName].rating = rating;
+            saveHistory();
+            updateRatingDisplay(recipeName);
+        }
+
+        // Save notes
+        function saveNotes(recipeName, notes) {
+            if (!APP.history[recipeName]) {
+                APP.history[recipeName] = {
+                    madeDates: [],
+                    rating: 0,
+                    notes: ''
+                };
+            }
+
+            APP.history[recipeName].notes = notes;
+            saveHistory();
+        }
+
+        // Update favorite button in modal
+        function updateFavoriteButton(recipeName) {
+            const heartBtn = document.getElementById('favoriteBtn');
+            if (heartBtn) {
+                const isFavorite = APP.favorites.has(recipeName);
+                heartBtn.textContent = isFavorite ? '❤️' : '🤍';
+                heartBtn.className = 'favorite-btn' + (isFavorite ? ' active' : '');
+            }
+        }
+
+        // Update rating display
+        function updateRatingDisplay(recipeName) {
+            const ratingEl = document.getElementById('ratingStars');
+            if (ratingEl && APP.history[recipeName]) {
+                const rating = APP.history[recipeName].rating;
+                const stars = ratingEl.querySelectorAll('span');
+                stars.forEach((star, idx) => {
+                    star.className = idx < rating ? 'filled' : '';
+                });
+            }
+        }
+
+        // Update made this section
+        function updateMadeThisSection(recipeName) {
+            const madeSection = document.getElementById('madeThisInfo');
+            if (madeSection && APP.history[recipeName]) {
+                const history = APP.history[recipeName];
+                const count = history.madeDates.length;
+                const lastMade = history.madeDates.length > 0
+                    ? new Date(history.madeDates[history.madeDates.length - 1]).toLocaleDateString()
+                    : 'Never';
+
+                madeSection.innerHTML = `<strong>Made ${count} time${count !== 1 ? 's' : ''}</strong><br>Last: ${lastMade}`;
+            }
+        }
+
+        // Display favorites section
+        function displayFavorites() {
+            if (APP.favorites.size === 0) {
+                elements.favoritesSection.style.display = 'none';
+                return;
+            }
+
+            const allRecipes = APP.allResults ?
+                APP.allResults.perfect.concat(APP.allResults.veryGood, APP.allResults.good) : [];
+
+            let html = '<div class="search-title">❤️ Your Favorites</div>';
+            html += '<div style="margin-bottom: 20px; opacity: 0.95;">Quick access to your saved recipes</div>';
+
+            const favoriteRecipes = allRecipes.filter(r => APP.favorites.has(r.name));
+
+            if (favoriteRecipes.length === 0) {
+                html += '<div style="background: rgba(255,255,255,0.9); color: #333; padding: 20px; border-radius: 10px;">';
+                html += 'You have favorites saved, but they\'re not in your current recipe collection.';
+                html += '</div>';
+            } else {
+                favoriteRecipes.forEach(function(recipe) {
+                    const category = APP.allResults.perfect.includes(recipe) ? 'perfect' :
+                                   APP.allResults.veryGood.includes(recipe) ? 'veryGood' : 'good';
+                    const index = APP.allResults[category].indexOf(recipe);
+
+                    html += createRecipeCard(recipe, category, index);
+                });
+            }
+
+            elements.favoritesSection.innerHTML = html;
+            elements.favoritesSection.style.display = 'block';
+
+            // Add click handlers
+            elements.favoritesSection.querySelectorAll('.recipe-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    const category = this.dataset.category;
+                    const index = parseInt(this.dataset.index);
+                    showRecipe(category, index);
+                });
+            });
+        }
+
+        // ===== INVENTORY MANAGEMENT FUNCTIONS =====
+
+        // Load inventory from localStorage
+        function loadSavedInventory() {
+            const saved = localStorage.getItem('cocktail_inventory');
+            if (saved) {
+                APP.editableInventory = JSON.parse(saved);
+                return true;
+            }
+            return false;
+        }
+
+        // Save inventory to localStorage
+        function saveInventory() {
+            localStorage.setItem('cocktail_inventory', JSON.stringify(APP.editableInventory));
+        }
+
+        // Display inventory manager
+        function displayInventoryManager() {
+            let html = '<div class="search-title">📦 Manage Your Bar Stock</div>';
+            html += '<div style="margin-bottom: 15px; opacity: 0.95;">Add or remove ingredients. Changes update your recipes instantly!</div>';
+
+            html += '<div class="inventory-list">';
+            APP.editableInventory.forEach(function(item, idx) {
+                html += '<div class="inventory-item">';
+                html += '<div class="inventory-item-name">' + escapeHtml(item) + '</div>';
+                html += '<button class="inventory-remove-btn" onclick="removeIngredient(' + idx + ')">Remove</button>';
+                html += '</div>';
+            });
+            html += '</div>';
+
+            html += '<div class="inventory-add-section">';
+            html += '<input type="text" id="newIngredientInput" class="inventory-add-input" placeholder="Add new ingredient (e.g., Aperol, Campari)">';
+            html += '<button class="inventory-add-btn" onclick="addIngredient()">Add</button>';
+            html += '</div>';
+
+            html += '<div style="margin-top: 20px; background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; text-align: center;">';
+            html += '<strong>Total Ingredients: ' + APP.editableInventory.length + '</strong>';
+            html += '</div>';
+
+            elements.inventoryManager.innerHTML = html;
+            elements.inventoryManager.style.display = 'block';
+        }
+
+        // Add ingredient
+        function addIngredient() {
+            const input = document.getElementById('newIngredientInput');
+            const newItem = input.value.trim();
+
+            if (!newItem) {
+                alert('Please enter an ingredient name');
+                return;
+            }
+
+            // Check for duplicates
+            if (APP.editableInventory.some(item => item.toLowerCase() === newItem.toLowerCase())) {
+                alert('This ingredient is already in your inventory');
+                return;
+            }
+
+            APP.editableInventory.push(newItem);
+            saveInventory();
+            input.value = '';
+
+            // Re-analyze with new inventory
+            reanalyzeWithCurrentInventory();
+        }
+
+        // Remove ingredient
+        function removeIngredient(index) {
+            const item = APP.editableInventory[index];
+            if (confirm('Remove "' + item + '" from your bar?')) {
+                APP.editableInventory.splice(index, 1);
+                saveInventory();
+
+                // Re-analyze with updated inventory
+                reanalyzeWithCurrentInventory();
+            }
+        }
+
+        // Re-analyze with current inventory
+        function reanalyzeWithCurrentInventory() {
+            if (!APP.recipeData || APP.recipeData.length === 0) {
+                alert('Please upload recipes first');
+                return;
+            }
+
+            // Convert editable inventory to the format expected by analysis
+            const fakeInventoryData = APP.editableInventory.map(name => ({
+                Name: name,
+                'Stock Number': 1
+            }));
+
+            const results = runAnalysis(fakeInventoryData, APP.recipeData);
+            displayResults(results);
+            displayFavorites();
+            displayInventoryManager();
+            generateShoppingList(results);
+            setupSearch();
+        }
+
+        // Export inventory as CSV
+        function exportInventory() {
+            const csv = 'Name,Stock Number,Category\n' +
+                APP.editableInventory.map(item => `${item},1,`).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'my-bar-inventory.csv';
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         // Clear conversation history
@@ -726,8 +1159,16 @@
 
             setTimeout(function() {
                 try {
+                    // Populate editable inventory from uploaded data
+                    APP.editableInventory = APP.inventoryData
+                        .filter(item => item['Stock Number'] > 0)
+                        .map(item => item.Name);
+                    saveInventory();
+
                     const results = runAnalysis(APP.inventoryData, APP.recipeData);
                     displayResults(results);
+                    displayFavorites();
+                    displayInventoryManager();
                     generateShoppingList(results);
                     setupSearch();
                     elements.searchSection.style.display = 'block';
@@ -1354,8 +1795,49 @@ RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
             const recipe = APP.allResults[category][index];
             if (!recipe) return;
 
-            let html = '<div class="modal-title">' + escapeHtml(recipe.name) + '</div>';
+            const isFavorite = APP.favorites.has(recipe.name);
+            const history = APP.history[recipe.name] || { madeDates: [], rating: 0, notes: '' };
+
+            let html = '<div style="display: flex; justify-content: space-between; align-items: start;">';
+            html += '<div class="modal-title">' + escapeHtml(recipe.name) + '</div>';
+            html += '<button id="favoriteBtn" class="favorite-btn' + (isFavorite ? ' active' : '') + '" onclick="toggleFavorite(\'' + escapeHtml(recipe.name) + '\')">';
+            html += isFavorite ? '❤️' : '🤍';
+            html += '</button>';
+            html += '</div>';
+
             html += '<div class="compatibility-badge">' + recipe.compatibility + '% Compatible</div>';
+
+            // Action buttons
+            html += '<div class="action-buttons">';
+            html += '<button class="action-btn" onclick="markAsMade(\'' + escapeHtml(recipe.name) + '\')">✓ Made This</button>';
+            html += '</div>';
+
+            // History section
+            if (history.madeDates.length > 0 || history.rating > 0 || history.notes) {
+                html += '<div class="made-this-section">';
+                html += '<div id="madeThisInfo">';
+                const count = history.madeDates.length;
+                const lastMade = history.madeDates.length > 0
+                    ? new Date(history.madeDates[history.madeDates.length - 1]).toLocaleDateString()
+                    : 'Never';
+                html += `<strong>Made ${count} time${count !== 1 ? 's' : ''}</strong><br>Last: ${lastMade}`;
+                html += '</div>';
+
+                // Rating
+                html += '<div style="margin-top: 10px;"><strong>Your Rating:</strong></div>';
+                html += '<div id="ratingStars" class="rating-stars">';
+                for (let i = 1; i <= 5; i++) {
+                    html += '<span class="' + (i <= history.rating ? 'filled' : '') + '" onclick="setRating(\'' + escapeHtml(recipe.name) + '\', ' + i + ')">★</span>';
+                }
+                html += '</div>';
+
+                // Notes
+                html += '<div style="margin-top: 10px;"><strong>Your Notes:</strong></div>';
+                html += '<textarea class="notes-input" id="recipeNotes" placeholder="Add your notes...">' + escapeHtml(history.notes) + '</textarea>';
+                html += '<button class="action-btn" style="margin-top: 10px;" onclick="saveNotes(\'' + escapeHtml(recipe.name) + '\', document.getElementById(\'recipeNotes\').value)">Save Notes</button>';
+                html += '</div>';
+            }
+
             html += '<div class="modal-section"><div class="modal-section-title">📋 Ingredients</div>';
             html += '<div class="modal-section-content"><ul class="ingredient-list">';
 
@@ -1532,6 +2014,17 @@ RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
             };
             return text.replace(/[&<>"']/g, m => map[m]);
         }
+
+        // Make functions globally accessible for onclick handlers
+        window.toggleFavorite = toggleFavorite;
+        window.markAsMade = markAsMade;
+        window.setRating = setRating;
+        window.saveNotes = saveNotes;
+        window.addIngredient = addIngredient;
+        window.removeIngredient = removeIngredient;
+        window.exportInventory = exportInventory;
+        window.showRecipe = showRecipe;
+        window.closeModal = closeModal;
 
         // Initialize app
         init();
