@@ -1071,6 +1071,9 @@
                 }
             }
 
+            // Load saved recipes if exists
+            loadSavedRecipes();
+
             // Check if we have saved data to enable analyze button
             checkReady();
         }
@@ -1297,6 +1300,23 @@
         // Save inventory to localStorage
         function saveInventory() {
             localStorage.setItem('cocktail_inventory', JSON.stringify(APP.editableInventory));
+        }
+
+        // Load recipes from localStorage
+        function loadSavedRecipes() {
+            const saved = localStorage.getItem('cocktail_recipes');
+            if (saved) {
+                APP.recipeData = JSON.parse(saved);
+                return true;
+            }
+            return false;
+        }
+
+        // Save recipes to localStorage
+        function saveRecipes() {
+            if (APP.recipeData && APP.recipeData.length > 0) {
+                localStorage.setItem('cocktail_recipes', JSON.stringify(APP.recipeData));
+            }
         }
 
         // Display inventory manager
@@ -1654,8 +1674,51 @@
 
         // Check if ready to analyze
         function checkReady() {
-            if (APP.inventoryData && APP.recipeData.length > 0) {
+            const hasInventory = (APP.inventoryData && APP.inventoryData.length > 0) ||
+                                 (APP.editableInventory && APP.editableInventory.length > 0);
+            const hasRecipes = APP.recipeData && APP.recipeData.length > 0;
+
+            if (hasInventory && hasRecipes) {
                 elements.analyzeBtn.disabled = false;
+                updateDataStatus();
+            } else {
+                updateDataStatus();
+            }
+        }
+
+        // Update data status on home page
+        function updateDataStatus() {
+            const inventoryCount = APP.editableInventory?.length || 0;
+            const recipeCount = APP.recipeData?.length || 0;
+
+            let statusHTML = '<div style="margin-top: 16px; padding: 16px; background: var(--bg-tertiary); border-radius: 8px; font-size: 0.875rem;">';
+            statusHTML += '<div style="margin-bottom: 8px;"><strong>Current Status:</strong></div>';
+
+            if (inventoryCount > 0) {
+                statusHTML += '<div style="color: var(--success);">✓ Bar Stock: ' + inventoryCount + ' bottles loaded</div>';
+            } else {
+                statusHTML += '<div style="color: var(--text-secondary);">○ Bar Stock: No bottles loaded</div>';
+            }
+
+            if (recipeCount > 0) {
+                statusHTML += '<div style="color: var(--success);">✓ Recipes: ' + recipeCount + ' cocktails loaded</div>';
+            } else {
+                statusHTML += '<div style="color: var(--text-secondary);">○ Recipes: No recipes loaded</div>';
+            }
+
+            statusHTML += '</div>';
+
+            const existingStatus = document.getElementById('dataStatus');
+            if (existingStatus) {
+                existingStatus.innerHTML = statusHTML;
+            } else {
+                const statusDiv = document.createElement('div');
+                statusDiv.id = 'dataStatus';
+                statusDiv.innerHTML = statusHTML;
+                const uploadSection = document.querySelector('.upload-section');
+                if (uploadSection) {
+                    uploadSection.insertAdjacentElement('afterend', statusDiv);
+                }
             }
         }
 
@@ -1675,33 +1738,48 @@
 
             setTimeout(function() {
                 try {
-                    // Populate editable inventory from uploaded data - PRESERVE ALL 12 COLUMNS
-                    APP.editableInventory = APP.inventoryData
-                        .filter(item => item['Stock Number'] > 0)
-                        .map(item => ({
-                            'Liquor Type': item['Liquor Type'] || '',
-                            'Name': item.Name || '',
-                            'Stock Number': item['Stock Number'] || 1,
-                            'Detailed Spirit Classification': item['Detailed Spirit Classification'] || '',
-                            'Distillation Method': item['Distillation Method'] || '',
-                            'ABV (%)': item['ABV (%)'] || '',
-                            'Distillery Location': item['Distillery Location'] || '',
-                            'Age Statement or Barrel Finish': item['Age Statement or Barrel Finish'] || '',
-                            'Additional Notes': item['Additional Notes'] || '',
-                            'Profile (Nose)': item['Profile (Nose)'] || '',
-                            'Palate': item.Palate || '',
-                            'Finish': item.Finish || '',
-                            // Preserve any other columns not explicitly listed
-                            ...item
-                        }));
-                    saveInventory();
+                    // Use inventory from either new upload or saved data
+                    let inventoryToUse;
 
-                    const results = runAnalysis(APP.inventoryData, APP.recipeData);
+                    if (APP.inventoryData && APP.inventoryData.length > 0) {
+                        // New CSV was uploaded - process it
+                        APP.editableInventory = APP.inventoryData
+                            .filter(item => item['Stock Number'] > 0)
+                            .map(item => ({
+                                'Liquor Type': item['Liquor Type'] || '',
+                                'Name': item.Name || '',
+                                'Stock Number': item['Stock Number'] || 1,
+                                'Detailed Spirit Classification': item['Detailed Spirit Classification'] || '',
+                                'Distillation Method': item['Distillation Method'] || '',
+                                'ABV (%)': item['ABV (%)'] || '',
+                                'Distillery Location': item['Distillery Location'] || '',
+                                'Age Statement or Barrel Finish': item['Age Statement or Barrel Finish'] || '',
+                                'Additional Notes': item['Additional Notes'] || '',
+                                'Profile (Nose)': item['Profile (Nose)'] || '',
+                                'Palate': item.Palate || '',
+                                'Finish': item.Finish || '',
+                                // Preserve any other columns not explicitly listed
+                                ...item
+                            }));
+                        saveInventory();
+                        inventoryToUse = APP.inventoryData;
+                    } else if (APP.editableInventory && APP.editableInventory.length > 0) {
+                        // Use saved inventory from My Bar
+                        inventoryToUse = APP.editableInventory;
+                    } else {
+                        showError('No inventory data available. Please upload bar stock CSV or add bottles to My Bar.');
+                        return;
+                    }
+
+                    const results = runAnalysis(inventoryToUse, APP.recipeData);
                     displayResults(results);
                     displayFavorites();
                     displayInventoryManager();
                     generateShoppingList(results);
                     setupSearch();
+
+                    // Save recipes to localStorage for next time
+                    saveRecipes();
 
                     // Analysis complete - user can now navigate to other tabs
                 } catch (error) {
