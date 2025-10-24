@@ -718,17 +718,109 @@
         .collapse-btn:hover {
             background: var(--bg-hover);
         }
+        .ai-context-info {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #f0f9ff 100%);
+            padding: 20px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 24px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .ai-context-info ul {
+            margin: 12px 0 0 20px;
+            color: var(--text-primary);
+        }
+
+        .ai-context-info li {
+            margin-bottom: 6px;
+        }
+
+        .ai-query-section {
+            margin-bottom: 24px;
+        }
+
+        .ai-query-section textarea {
+            min-height: 140px;
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        .ai-button-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
         .ai-examples {
             background: var(--bg-tertiary);
-            padding: 16px;
+            padding: 20px;
             border-radius: var(--radius-sm);
             margin-top: 12px;
             font-size: 0.875rem;
             border: 1px solid var(--border-light);
         }
-        .ai-examples ul {
-            margin-left: 20px;
-            margin-top: 5px;
+
+        .ai-examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .ai-example-card {
+            background: var(--bg-primary);
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            transition: all 0.2s ease;
+        }
+
+        .ai-example-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+
+        .ai-example-card strong {
+            display: block;
+            color: var(--primary);
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+        }
+
+        .ai-example-card p {
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            font-style: italic;
+            margin: 0;
+        }
+
+        .ai-response-area {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 20px;
+            border-radius: var(--radius-sm);
+            margin-top: 20px;
+            display: none;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .ai-response-area.active {
+            display: block;
+        }
+
+        .ai-response-area h3 {
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .ai-response-area pre {
+            background: var(--bg-secondary);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            overflow-x: auto;
         }
         .favorite-btn {
             background: none;
@@ -1035,41 +1127,8 @@
             color: var(--text-primary);
         }
 
-        .search-filter-bar {
-            display: flex;
-            gap: 12px;
+        .sort-bar {
             margin-bottom: 16px;
-        }
-
-        .search-input-wrapper {
-            flex: 1;
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 16px;
-            font-size: 1.25rem;
-            pointer-events: none;
-        }
-
-        .recipe-search-input {
-            width: 100%;
-            padding: 12px 16px 12px 48px;
-            border: 2px solid var(--border-light);
-            border-radius: var(--radius-sm);
-            font-size: 0.9375rem;
-            transition: all 0.2s ease;
-            background: var(--bg-secondary);
-        }
-
-        .recipe-search-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: var(--bg-primary);
-            box-shadow: 0 0 0 3px rgba(10, 126, 164, 0.1);
         }
 
         .sort-select {
@@ -1265,10 +1324,6 @@
                 width: 100%;
             }
 
-            .search-filter-bar {
-                flex-direction: column;
-            }
-
             .sort-select {
                 width: 100%;
                 min-width: auto;
@@ -1426,18 +1481,8 @@
                     </button>
                 </div>
 
-                <!-- Search Bar -->
-                <div class="search-filter-bar">
-                    <div class="search-input-wrapper">
-                        <span class="search-icon">🔍</span>
-                        <input
-                            type="text"
-                            id="recipeSearchInput"
-                            class="recipe-search-input"
-                            placeholder="Search recipes by name or ingredient..."
-                        />
-                    </div>
-
+                <!-- Sort Options -->
+                <div class="sort-bar">
                     <select id="sortSelect" class="sort-select">
                         <option value="compatibility">Sort by Compatibility</option>
                         <option value="name-asc">Sort A-Z</option>
@@ -1481,40 +1526,87 @@
             <!-- Page: AI Assistant -->
             <div id="tab-ai" class="tab-content">
                 <div class="page-header">
-                    <h2 class="page-title">AI Assistant</h2>
-                    <p class="page-subtitle">Chat with your personal bartender</p>
+                    <h2 class="page-title">🤖 AI Bartender</h2>
+                    <p class="page-subtitle">Your personal cocktail discovery assistant</p>
                 </div>
 
                 <div id="aiSearchSection" class="ai-search-section">
+                    <!-- API Key Setup -->
                     <div class="api-key-section" id="apiKeySection">
-                        <label for="apiKey">Anthropic API Key:
+                        <label for="apiKey">🔑 Anthropic API Key:
                             <button class="collapse-btn" id="toggleApiKey">Show/Hide</button>
                         </label>
                         <input type="password" id="apiKey" placeholder="sk-ant-..." style="display: none;">
                         <div class="api-key-status" id="apiKeyStatus"></div>
+                        <p style="font-size: 0.8125rem; margin-top: 8px; opacity: 0.9;">
+                            Get your API key from <a href="https://console.anthropic.com" target="_blank" style="color: white; text-decoration: underline;">console.anthropic.com</a>
+                        </p>
                     </div>
 
-                    <div class="search-controls">
-                        <textarea id="aiQuery" placeholder="Examples:
-• What cocktails can I make with a funky, high-ester Jamaican rum?
-• Recommend drinks for a hot summer day
-• What can I make with my Hamilton 86 that has notes of molasses and caramel?
-• Show me tiki drinks with tropical flavors"></textarea>
-                        <button id="aiQueryBtn" class="ai-query-btn">Ask AI</button>
-                        <button id="clearConversationBtn" class="btn-secondary btn-sm">Clear Conversation</button>
-                    </div>
-
-                    <div class="ai-examples">
-                        <strong>💡 Try asking about:</strong>
+                    <!-- AI Context Info -->
+                    <div class="ai-context-info">
+                        <p><strong>🧠 I know about:</strong></p>
                         <ul>
-                            <li>Flavor profiles ("citrus-forward", "spicy", "herbal")</li>
-                            <li>Specific spirits with their tasting notes</li>
-                            <li>Occasions or moods ("refreshing", "strong", "easy to make")</li>
-                            <li>Style preferences ("tiki", "classic", "sour")</li>
+                            <li>Your complete bar inventory (all bottles & ingredients)</li>
+                            <li>Your favorite cocktails and what you've made before</li>
+                            <li>All recipes you can make right now</li>
+                            <li>Tasting notes and profiles of your spirits</li>
                         </ul>
                     </div>
 
-                    <div id="aiSearchResponse" class="search-response"></div>
+                    <!-- Query Input -->
+                    <div class="ai-query-section">
+                        <label for="aiQuery" style="font-weight: 600; margin-bottom: 12px; display: block;">
+                            💬 Ask me anything about cocktails:
+                        </label>
+                        <textarea id="aiQuery" placeholder="Type your question here...
+
+Examples:
+• What's the best cocktail to make with my Smith & Cross rum?
+• I want something tropical and not too sweet
+• What's similar to a Mai Tai but uses whiskey?
+• Suggest a drink to impress guests who like gin
+• What can I make that's perfect for a hot day?
+• Show me an easy beginner tiki drink"></textarea>
+                        <div class="ai-button-row">
+                            <button id="aiQueryBtn" class="ai-query-btn">✨ Ask AI Bartender</button>
+                            <button id="clearConversationBtn" class="btn-secondary btn-sm">↺ New Conversation</button>
+                        </div>
+                    </div>
+
+                    <!-- Inspiring Examples -->
+                    <div class="ai-examples">
+                        <strong>💡 Ask me to help you:</strong>
+                        <div class="ai-examples-grid">
+                            <div class="ai-example-card">
+                                <strong>🔍 Discover</strong>
+                                <p>"What cocktails highlight my Navy strength rum?"</p>
+                            </div>
+                            <div class="ai-example-card">
+                                <strong>🎯 Match Preferences</strong>
+                                <p>"I like smoky, spirit-forward drinks"</p>
+                            </div>
+                            <div class="ai-example-card">
+                                <strong>🌴 Explore Styles</strong>
+                                <p>"Show me authentic tiki drinks I can make"</p>
+                            </div>
+                            <div class="ai-example-card">
+                                <strong>📚 Learn</strong>
+                                <p>"What makes a Mai Tai different from a Zombie?"</p>
+                            </div>
+                            <div class="ai-example-card">
+                                <strong>🔄 Find Alternatives</strong>
+                                <p>"I'm out of orgeat, what can I substitute?"</p>
+                            </div>
+                            <div class="ai-example-card">
+                                <strong>👥 Entertain</strong>
+                                <p>"What's a crowd-pleaser for non-cocktail people?"</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Response Area -->
+                    <div id="aiSearchResponse" class="ai-response-area"></div>
                 </div>
             </div>
         </main>
@@ -1540,7 +1632,6 @@
             history: {},  // { recipeName: { hasMade: false, rating: 0, notes: '' } }
             editableInventory: [],
             // Search & Filter state
-            searchQuery: '',
             activeFilters: {
                 perfectMatches: false,
                 missingOne: false
@@ -1577,7 +1668,6 @@
             inventoryManager: document.getElementById('inventoryManager'),
             // Search & Filter elements
             filterControls: document.getElementById('filterControls'),
-            recipeSearchInput: document.getElementById('recipeSearchInput'),
             sortSelect: document.getElementById('sortSelect'),
             randomCocktailBtn: document.getElementById('randomCocktailBtn'),
             perfectMatchesBtn: document.getElementById('perfectMatchesBtn'),
@@ -1645,13 +1735,6 @@
         // ===== SEARCH & FILTER SETUP =====
 
         function setupSearchAndFilters() {
-            if (elements.recipeSearchInput) {
-                elements.recipeSearchInput.addEventListener('input', function() {
-                    APP.searchQuery = this.value;
-                    refreshResults();
-                });
-            }
-
             if (elements.sortSelect) {
                 elements.sortSelect.addEventListener('change', function() {
                     APP.sortBy = this.value;
@@ -2741,7 +2824,50 @@
             // Prepare cocktail data for Claude
             const allRecipes = APP.allResults.perfect.concat(APP.allResults.veryGood, APP.allResults.good);
 
-            // Create compact recipe list (reduce tokens)
+            // Build inventory context with tasting notes
+            let inventoryContext = "\n=== USER'S BAR INVENTORY ===\n";
+            if (APP.editableInventory && APP.editableInventory.length > 0) {
+                const spirits = APP.editableInventory.slice(0, 40); // Limit to first 40 bottles
+                spirits.forEach(item => {
+                    let itemDesc = `${item.Name || 'Unknown'}`;
+                    if (item['Liquor Type']) itemDesc += ` (${item['Liquor Type']})`;
+                    if (item['Detailed Spirit Classification']) itemDesc += ` - ${item['Detailed Spirit Classification']}`;
+
+                    // Add tasting notes if available
+                    const notes = [];
+                    if (item['Profile (Nose)']) notes.push(`Nose: ${item['Profile (Nose)']}`);
+                    if (item['Palate']) notes.push(`Palate: ${item['Palate']}`);
+                    if (item['Finish']) notes.push(`Finish: ${item['Finish']}`);
+                    if (notes.length > 0) itemDesc += ` | ${notes.join(', ')}`;
+
+                    inventoryContext += `- ${itemDesc}\n`;
+                });
+            }
+
+            // Build favorites context
+            let favoritesContext = "";
+            if (APP.favorites.size > 0) {
+                favoritesContext = "\n=== USER'S FAVORITE COCKTAILS ===\n";
+                Array.from(APP.favorites).slice(0, 10).forEach(name => {
+                    favoritesContext += `- ${name}\n`;
+                });
+            }
+
+            // Build history context
+            let historyContext = "";
+            const madeRecipes = Object.keys(APP.history).filter(name => APP.history[name].hasMade);
+            if (madeRecipes.length > 0) {
+                historyContext = "\n=== COCKTAILS USER HAS MADE ===\n";
+                madeRecipes.slice(0, 15).forEach(name => {
+                    const hist = APP.history[name];
+                    let line = `- ${name}`;
+                    if (hist.rating) line += ` (⭐${hist.rating}/5)`;
+                    if (hist.notes) line += ` - "${hist.notes.substring(0, 50)}"`;
+                    historyContext += line + "\n";
+                });
+            }
+
+            // Create compact recipe list
             const recipeList = allRecipes.map(r => {
                 // Get main spirits/ingredients only (first 3-4 ingredients)
                 const ingredientLines = r.fullRecipe.Ingredients.split('\n').slice(0, 4);
@@ -2755,22 +2881,28 @@
                 return `${r.name} (${r.compatibility}% match) - ${mainIngredients}`;
             });
 
-            // Limit to top 30 recipes to reduce token usage
+            // Limit to top 30 recipes
             const topRecipes = recipeList.slice(0, 30);
 
-            const systemPrompt = `You are a friendly, knowledgeable bartender helping someone explore cocktails they can make from their home bar.
-
-Available cocktails:
+            const systemPrompt = `You are a friendly, expert bartender helping someone explore cocktails they can make from their home bar. You have deep knowledge of spirits, flavor profiles, and cocktail history.
+${inventoryContext}${favoritesContext}${historyContext}
+=== MAKEABLE COCKTAILS ===
 ${topRecipes.join('\n')}
 
-Have a natural conversation. Explain your recommendations and why they match the request. Ask follow-up questions if needed. Be enthusiastic but concise.
+GUIDELINES:
+- Reference specific bottles from their inventory when relevant (especially tasting notes)
+- Consider their favorites and past ratings when making recommendations
+- Suggest drinks that match their preferences and experience level
+- Be conversational and enthusiastic, but concise
+- Explain WHY you're recommending something
+- If they ask about a specific spirit, reference its exact name and profile from their inventory
 
-At the end of your response, include a line starting with "RECOMMENDATIONS:" followed by a JSON array of 3-5 exact cocktail names from the list above.
+At the end of your response, include "RECOMMENDATIONS:" followed by a JSON array of 3-5 exact cocktail names from the makeable cocktails list.
 
 Example:
-Based on what you're looking for, I'd suggest starting with a Mai Tai - it's refreshing, tropical, and really showcases that rum! The Mojito would also be perfect for a hot day with its minty freshness. For something a bit more complex, try the Zombie.
+I see you have Smith & Cross Navy Strength rum with those funky, high-ester notes of ripe banana and molasses. That would be PERFECT in a Mai Tai or Zombie - those drinks were designed for bold Jamaican rums like this! Since you loved the Mai Tai before (gave it 5 stars!), you might also enjoy a Jungle Bird which has similar tropical vibes but adds Campari for complexity.
 
-RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
+RECOMMENDATIONS: ["Mai Tai", "Zombie", "Jungle Bird"]`;
 
             // Build conversation messages
             const messages = [];
@@ -3137,19 +3269,6 @@ RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
                 ...results.good.map(r => ({...r, category: 'good'}))
             ];
 
-            // Apply search query
-            if (APP.searchQuery.trim() !== '') {
-                const query = APP.searchQuery.toLowerCase();
-                allRecipes = allRecipes.filter(recipe => {
-                    // Search in recipe name
-                    if (recipe.name.toLowerCase().includes(query)) return true;
-                    // Search in ingredients
-                    if (recipe.ingredients && recipe.ingredients.some(ing =>
-                        ing.toLowerCase().includes(query))) return true;
-                    return false;
-                });
-            }
-
             // Apply perfect matches filter
             if (APP.activeFilters.perfectMatches) {
                 allRecipes = allRecipes.filter(r => r.missing.length === 0);
@@ -3192,9 +3311,6 @@ RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
 
             // Update active filters display
             const activeFiltersArray = [];
-            if (APP.searchQuery.trim() !== '') {
-                activeFiltersArray.push('Search: ' + APP.searchQuery);
-            }
             if (APP.activeFilters.perfectMatches) {
                 activeFiltersArray.push('Perfect Matches');
             }
@@ -3227,11 +3343,9 @@ RECOMMENDATIONS: ["Mai Tai", "Mojito", "Zombie"]`;
         }
 
         function clearAllFilters() {
-            APP.searchQuery = '';
             APP.activeFilters.perfectMatches = false;
             APP.activeFilters.missingOne = false;
             APP.sortBy = 'compatibility';
-            elements.recipeSearchInput.value = '';
             elements.sortSelect.value = 'compatibility';
             refreshResults();
         }
