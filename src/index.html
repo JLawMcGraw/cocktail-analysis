@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cocktail Compatibility Analyzer</title>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <h1>🍹 Cocktail Analyzer</h1>
+          <div class="tagline">AI-Powered Bar Stock Analysis</div>
+        </div>
+        <nav>
+          <ul class="sidebar-nav">
+            <li class="sidebar-nav-item">
+              <button class="sidebar-nav-link active" data-tab="recipesTab">
+                <span class="icon">📋</span>
+                Recipes
+              </button>
+            </li>
+            <li class="sidebar-nav-item">
+              <button class="sidebar-nav-link" data-tab="inventoryTab">
+                <span class="icon">📦</span>
+                My Bar
+              </button>
+            </li>
+            <li class="sidebar-nav-item">
+              <button class="sidebar-nav-link" data-tab="favoritesTab">
+                <span class="icon">❤️</span>
+                Favorites
+              </button>
+            </li>
+            <li class="sidebar-nav-item">
+              <button class="sidebar-nav-link" data-tab="aiTab">
+                <span class="icon">🤖</span>
+                AI Bartender
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Recipes Tab -->
+        <div id="recipesTab" class="tab-content active">
+          <div class="page-header">
+            <h2 class="page-title">Discover Cocktails</h2>
+            <p class="page-subtitle">Find cocktails you can make with your bar stock</p>
+          </div>
+
+          <!-- Upload Section -->
+          <div class="upload-section">
+            <div class="file-input-group">
+              <label for="inventoryInput">📦 Upload Bar Stock (CSV)</label>
+              <input type="file" id="inventoryInput" accept=".csv" />
+            </div>
+
+            <div class="file-input-group">
+              <label for="recipeInput">📋 Upload Recipes (CSV)</label>
+              <input type="file" id="recipeInput" accept=".csv" />
+            </div>
+
+            <button id="analyzeBtn" class="btn-primary">Analyze My Bar</button>
+          </div>
+
+          <!-- Results -->
+          <div id="results"></div>
+        </div>
+
+        <!-- Inventory Tab -->
+        <div id="inventoryTab" class="tab-content">
+          <div class="page-header">
+            <h2 class="page-title">My Bar</h2>
+            <p class="page-subtitle">Manage your inventory</p>
+          </div>
+
+          <div class="card">
+            <p>Inventory management coming soon...</p>
+            <p>For now, use the CSV upload in the Recipes tab.</p>
+          </div>
+        </div>
+
+        <!-- Favorites Tab -->
+        <div id="favoritesTab" class="tab-content">
+          <div class="page-header">
+            <h2 class="page-title">Favorites</h2>
+            <p class="page-subtitle">Your saved cocktails</p>
+          </div>
+
+          <div class="card">
+            <p>Favorites feature coming soon...</p>
+          </div>
+        </div>
+
+        <!-- AI Bartender Tab -->
+        <div id="aiTab" class="tab-content">
+          <div class="page-header">
+            <h2 class="page-title">AI Bartender</h2>
+            <p class="page-subtitle">Get personalized cocktail recommendations</p>
+          </div>
+
+          <div class="card">
+            <p>AI Bartender feature coming soon...</p>
+            <p>This will use Claude AI to give you personalized recommendations based on your inventory.</p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Recipe Modal -->
+    <div id="recipeModal" class="modal">
+      <div class="modal-content">
+        <span class="modal-close">&times;</span>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+
+    <!-- Vite will inject the script -->
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
