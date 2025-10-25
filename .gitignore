@@ -9,6 +9,10 @@ yarn-debug.log*
 yarn-error.log*
 package-lock.json
 
+# Build output
+dist/
+.vite/
+
 # OS files
 .DS_Store
 Thumbs.db

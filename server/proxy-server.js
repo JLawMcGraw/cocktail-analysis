@@ -4,12 +4,12 @@
  *
  * Usage:
  * 1. Install dependencies: npm install
- * 2. Run server: node proxy-server.js
+ * 2. Run server: node server/proxy-server.js (or npm run proxy)
  * 3. Server runs on http://localhost:3000
  */
 
-const http = require('http');
-const https = require('https');
+import http from 'http';
+import https from 'https';
 
 const PORT = 3000;
 const ANTHROPIC_API = 'api.anthropic.com';
@@ -20,6 +20,8 @@ const server = http.createServer((req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
 
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+
     // Handle preflight requests
     if (req.method === 'OPTIONS') {
         res.writeHead(200);
@@ -29,8 +31,9 @@ const server = http.createServer((req, res) => {
 
     // Only handle POST requests to /api/messages
     if (req.method !== 'POST' || req.url !== '/api/messages') {
+        console.log(`❌ 404: Method=${req.method}, URL=${req.url}`);
         res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Not found' }));
+        res.end(JSON.stringify({ error: `Not found: ${req.method} ${req.url}` }));
         return;
     }
 
@@ -52,6 +55,7 @@ const server = http.createServer((req, res) => {
             }
 
             // Forward request to Anthropic API
+            console.log(`📤 Forwarding to Anthropic API...`);
             const options = {
                 hostname: ANTHROPIC_API,
                 path: '/v1/messages',
@@ -71,6 +75,10 @@ const server = http.createServer((req, res) => {
                 });
 
                 proxyRes.on('end', () => {
+                    console.log(`✅ Anthropic API response: ${proxyRes.statusCode}`);
+                    if (proxyRes.statusCode !== 200) {
+                        console.log(`Response body: ${responseBody.substring(0, 500)}`);
+                    }
                     res.writeHead(proxyRes.statusCode, {
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*'

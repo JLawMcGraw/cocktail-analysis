@@ -1,0 +1,48 @@
+:root {
+  /* Modern minimalist with tropical accents */
+  --primary: #0a7ea4;
+  --primary-dark: #076a8a;
+  --primary-light: #e0f4f9;
+  --secondary: #ff6b6b;
+  --secondary-dark: #e85555;
+  --secondary-light: #ffe5e5;
+
+  /* Tropical accent colors */
+  --coral: #ff7b54;
+  --teal: #14b8a6;
+  --sunset: #ffa94d;
+  --palm: #10b981;
+
+  /* Category colors */
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --info: #0a7ea4;
+
+  /* Modern backgrounds */
+  --bg-primary: #ffffff;
+  --bg-secondary: #fafaf9;
+  --bg-tertiary: #f5f5f4;
+  --bg-hover: #f0f0ef;
+  --bg-accent: linear-gradient(135deg, #fff7ed 0%, #fef3f2 100%);
+
+  /* Text colors */
+  --text-primary: #1c1917;
+  --text-secondary: #78716c;
+  --text-tertiary: #d6d3d1;
+
+  /* Borders and dividers */
+  --border: #d6d3d1;
+  --border-light: #e7e5e4;
+
+  /* Enhanced shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 20px 25px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.15);
+
+  /* Layout */
+  --sidebar-width: 260px;
+  --radius: 16px;
+  --radius-sm: 10px;
+}

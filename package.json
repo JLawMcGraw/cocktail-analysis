@@ -1,12 +1,21 @@
 {
   "name": "cocktail-compatibility-analyzer",
-  "version": "4.0.0",
-  "description": "A web app to analyze your bar stock and match cocktail recipes with AI-powered search and user authentication",
-  "main": "server/server.js",
+  "version": "6.0.0",
+  "description": "A web app to analyze your bar stock and match cocktail recipes with AI-powered search",
+  "type": "module",
+  "main": "server/server.cjs",
   "scripts": {
-    "start": "node server/server.js",
-    "dev": "node server/server.js",
-    "server": "node server/server.js"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "node server/server.cjs",
+    "proxy": "node server/proxy-server.js",
+    "dev:all": "concurrently \"npm run dev\" \"npm run server\"",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write src/"
   },
   "keywords": [
     "cocktail",
@@ -18,14 +27,23 @@
   "author": "",
   "license": "MIT",
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=18.0.0"
   },
   "dependencies": {
+    "papaparse": "^5.4.1",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "bcrypt": "^5.1.1",
     "better-sqlite3": "^9.2.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/papaparse": "^5.3.14",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0",
+    "vite": "^5.0.8",
+    "vitest": "^1.0.4"
   }
 }
