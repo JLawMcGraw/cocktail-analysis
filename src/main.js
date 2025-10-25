@@ -50,26 +50,14 @@ function init() {
   // Cache DOM elements
   cacheElements();
 
-  // Load saved data
+  // Load saved data (only API key and preferences)
   loadSavedData();
 
   // Initialize UI
   setupEventListeners();
   setupTabs();
 
-  // If we have saved data, run analysis automatically
-  if (APP.editableInventory.length > 0 && APP.recipeData.length > 0) {
-    const results = runAnalysis(APP.editableInventory, APP.recipeData);
-    APP.allResults = results;
-    displayResults(results);
-    displayFavorites();
-    displayInventoryManager();
-    displayShoppingList(results);
-    setupSearch();
-  } else {
-    displayInventoryManager();
-    displayFavorites();
-  }
+  // Note: Data loading and analysis moved to after auth check in DOMContentLoaded
 
   // Update UI states
   checkReady();
@@ -117,29 +105,18 @@ function cacheElements() {
 
 /**
  * Load saved data from localStorage
+ * Note: This is now only called after authentication is verified
  */
 function loadSavedData() {
-  const savedInventory = loadInventory();
-  if (savedInventory) {
-    APP.editableInventory = savedInventory;
-    APP.inventoryData = savedInventory;
-    console.log(`Loaded ${savedInventory.length} inventory items`);
-  }
-
-  const savedRecipes = loadRecipes();
-  if (savedRecipes) {
-    APP.recipeData = savedRecipes;
-    console.log(`Loaded ${savedRecipes.length} recipes`);
-  }
-
-  APP.favorites = loadFavorites();
-  APP.history = loadHistory();
+  // Only load API key and UI preferences initially
+  // Data (inventory, recipes) will be loaded by authIntegration if authenticated
   APP.apiKey = loadApiKey();
-  APP.recentlyViewed = loadRecentlyViewed();
 
   if (elements.apiKeyInput && APP.apiKey) {
     elements.apiKeyInput.value = APP.apiKey;
   }
+
+  console.log('Initial load complete (auth-gated data loading)');
 }
 
 /**
@@ -1731,8 +1708,23 @@ function showError(message) {
 /**
  * Initialize and run the app
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   init();
-  initAuth(); // Initialize authentication
+
+  // Initialize authentication (this will load data if authenticated)
+  await initAuth();
+
+  // After auth check, if we have data, run analysis
+  if (APP.editableInventory.length > 0 && APP.recipeData.length > 0) {
+    const results = runAnalysis(APP.editableInventory, APP.recipeData);
+    APP.allResults = results;
+    displayResults(results);
+    displayShoppingList(results);
+    setupSearch();
+  }
+
+  // Always display these UI components
+  displayInventoryManager();
+  displayFavorites();
 });
 

@@ -13,12 +13,47 @@ let authMode = 'login'; // 'login' or 'signup'
 // Initialize authentication
 export async function initAuth() {
   const isAuthenticated = await authService.verifySession();
+
+  // If not authenticated, clear old localStorage data
+  if (!isAuthenticated) {
+    clearLocalStorageData();
+  }
+
   updateAuthUI(isAuthenticated);
   setupAuthEventListeners();
 
   if (isAuthenticated) {
     await loadUserDataFromServer();
   }
+}
+
+// Clear localStorage data (but keep API key)
+function clearLocalStorageData() {
+  const apiKey = localStorage.getItem('anthropic_api_key');
+
+  // Clear all cocktail-related data
+  localStorage.removeItem('cocktail_inventory');
+  localStorage.removeItem('cocktail_recipes');
+  localStorage.removeItem('cocktail_favorites');
+  localStorage.removeItem('cocktail_history');
+  localStorage.removeItem('cocktail_recentlyViewed');
+  localStorage.removeItem('cocktail_active_tab');
+
+  // Restore API key if it existed
+  if (apiKey) {
+    localStorage.setItem('anthropic_api_key', apiKey);
+  }
+
+  // Clear app state
+  APP.inventoryData = null;
+  APP.recipeData = [];
+  APP.editableInventory = [];
+  APP.favorites = new Set();
+  APP.history = {};
+  APP.recentlyViewed = [];
+  APP.allResults = null;
+
+  console.log('Cleared localStorage data (not authenticated)');
 }
 
 // Update auth UI
@@ -166,11 +201,13 @@ export async function loadUserDataFromServer() {
       APP.editableInventory = inventory;
       APP.inventoryData = inventory;
       saveInventory(inventory);
+      console.log(`Loaded ${inventory.length} items from server`);
     }
 
     if (recipes && recipes.length > 0) {
       APP.recipeData = recipes;
       saveRecipes(recipes);
+      console.log(`Loaded ${recipes.length} recipes from server`);
     }
 
     if (favorites && favorites.length > 0) {
@@ -183,12 +220,9 @@ export async function loadUserDataFromServer() {
       saveHistory(history);
     }
 
-    // Trigger UI update if needed
-    if (typeof window.renderInventoryManager === 'function') {
-      window.renderInventoryManager();
-    }
+    showNotification('Data loaded from your account', 'success');
 
-    showNotification('Data loaded from server', 'success');
+    console.log('User data loaded successfully from server');
   } catch (error) {
     console.error('Error loading user data:', error);
     showNotification('Error loading your data: ' + error.message, 'error');
