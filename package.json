@@ -1,11 +1,12 @@
 {
   "name": "cocktail-compatibility-analyzer",
-  "version": "3.0.0",
-  "description": "A web app to analyze your bar stock and match cocktail recipes with AI-powered search",
-  "main": "proxy-server.js",
+  "version": "4.0.0",
+  "description": "A web app to analyze your bar stock and match cocktail recipes with AI-powered search and user authentication",
+  "main": "server/server.js",
   "scripts": {
-    "start": "node proxy-server.js",
-    "proxy": "node proxy-server.js"
+    "start": "node server/server.js",
+    "dev": "node server/server.js",
+    "server": "node server/server.js"
   },
   "keywords": [
     "cocktail",
@@ -18,5 +19,13 @@
   "license": "MIT",
   "engines": {
     "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^9.2.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
   }
 }

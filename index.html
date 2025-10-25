@@ -1346,6 +1346,9 @@
             }
         }
     </style>
+    <script src="auth-client.js"></script>
+    <script src="api-client.js"></script>
+    <script src="auth-integration.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -1388,6 +1391,23 @@
                     </button>
                 </div>
             </nav>
+
+            <!-- Auth Section -->
+            <div style="margin-top: auto; padding: 24px; border-top: 1px solid var(--border-light);">
+                <div id="authSection">
+                    <div id="authLoggedOut" style="display: none;">
+                        <button id="loginBtn" class="btn-primary" style="width: 100%; margin-bottom: 8px;">Login</button>
+                        <button id="signupBtn" class="btn-secondary" style="width: 100%;">Sign Up</button>
+                    </div>
+                    <div id="authLoggedIn" style="display: none;">
+                        <div style="margin-bottom: 12px; font-size: 0.875rem; color: var(--text-secondary);">
+                            <div>Logged in as:</div>
+                            <div id="userEmail" style="font-weight: 600; color: var(--text-primary); margin-top: 4px;"></div>
+                        </div>
+                        <button id="logoutBtn" class="btn-secondary" style="width: 100%;">Logout</button>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -1619,6 +1639,33 @@ Examples:
         <div class="modal-content">
             <span class="modal-close" id="modalClose">&times;</span>
             <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="modal-close" id="authModalClose">&times;</span>
+            <div id="authModalBody">
+                <h2 id="authModalTitle" style="margin-bottom: 24px; text-align: center;">Login</h2>
+                <form id="authForm" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email</label>
+                        <input type="email" id="authEmail" required style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Password</label>
+                        <input type="password" id="authPassword" required minlength="6" style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem;">
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Minimum 6 characters</div>
+                    </div>
+                    <div id="authError" style="display: none; padding: 12px; background: var(--secondary-light); color: var(--danger); border-radius: 8px; font-size: 0.875rem;"></div>
+                    <button type="submit" id="authSubmitBtn" class="btn-primary" style="width: 100%;">Login</button>
+                    <div style="text-align: center; font-size: 0.875rem; color: var(--text-secondary);">
+                        <span id="authSwitchText">Don't have an account?</span>
+                        <a href="#" id="authSwitchLink" style="color: var(--primary); font-weight: 600; text-decoration: none; margin-left: 4px;">Sign up</a>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -3804,6 +3851,9 @@ RECOMMENDATIONS: ["Mai Tai", "Zombie", "Jungle Bird"]`;
 
         // Initialize app
         init();
+
+        // Initialize authentication
+        initAuth();
     </script>
 </body>
 </html>
