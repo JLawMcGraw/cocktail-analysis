@@ -54,6 +54,12 @@ export async function queryClaudeAPI(prompt, conversationHistory, apiKey, contex
     }
   } catch (error) {
     console.error('AI API Error:', error);
+
+    // Provide helpful error messages
+    if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+      throw new Error('Cannot connect to proxy server. Please run: npm run proxy (or node server/proxy-server.js)');
+    }
+
     throw error;
   }
 }
@@ -94,12 +100,12 @@ ${inventory
   .join('\n')}
 
 **Available Recipes (${recipes.length} cocktails):**
-${recipes.map((r) => `- ${r['Drink Name']}`).join('\n')}
+${recipes.map((r) => `- ${r.name} (${r.compatibility}% match)`).join('\n')}
 
 ${
-  favorites.size > 0
+  favorites.length > 0
     ? `**User's Favorites:**
-${[...favorites].join(', ')}`
+${favorites.join(', ')}`
     : ''
 }
 
