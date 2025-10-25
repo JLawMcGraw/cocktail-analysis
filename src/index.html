@@ -10,13 +10,19 @@
       <!-- Sidebar -->
       <aside class="sidebar">
         <div class="sidebar-brand">
-          <h1>🍹 Cocktail Analyzer</h1>
-          <div class="tagline">AI-Powered Bar Stock Analysis</div>
+          <h1>🍹 Bartender</h1>
+          <div class="tagline">Your cocktail companion</div>
         </div>
         <nav>
           <ul class="sidebar-nav">
             <li class="sidebar-nav-item">
-              <button class="sidebar-nav-link active" data-tab="recipesTab">
+              <button class="sidebar-nav-link active" data-tab="homeTab">
+                <span class="icon">🏠</span>
+                Home
+              </button>
+            </li>
+            <li class="sidebar-nav-item">
+              <button class="sidebar-nav-link" data-tab="recipesTab">
                 <span class="icon">📋</span>
                 Recipes
               </button>
@@ -45,26 +51,95 @@
 
       <!-- Main Content -->
       <main class="main-content">
-        <!-- Recipes Tab -->
-        <div id="recipesTab" class="tab-content active">
+        <!-- Home Tab -->
+        <div id="homeTab" class="tab-content active">
           <div class="page-header">
-            <h2 class="page-title">Discover Cocktails</h2>
-            <p class="page-subtitle">Find cocktails you can make with your bar stock</p>
+            <h2 class="page-title">Get Started</h2>
+            <p class="page-subtitle">Upload your bar stock and recipes to discover what cocktails you can make</p>
           </div>
 
           <!-- Upload Section -->
           <div class="upload-section">
             <div class="file-input-group">
-              <label for="inventoryInput">📦 Upload Bar Stock (CSV)</label>
+              <label for="inventoryInput">📦 Bar Stock CSV</label>
               <input type="file" id="inventoryInput" accept=".csv" />
+              <div id="inventoryStatus" class="file-status"></div>
             </div>
 
             <div class="file-input-group">
-              <label for="recipeInput">📋 Upload Recipes (CSV)</label>
-              <input type="file" id="recipeInput" accept=".csv" />
+              <label for="recipeInput">📋 Recipe Collection CSV(s) - You can select multiple files!</label>
+              <input type="file" id="recipeInput" accept=".csv" multiple />
+              <div id="recipeStatus" class="file-status"></div>
             </div>
 
-            <button id="analyzeBtn" class="btn-primary">Analyze My Bar</button>
+            <button id="analyzeBtn" class="btn-primary" disabled>Analyze My Bar</button>
+          </div>
+
+          <!-- Backup/Restore -->
+          <div class="card" style="margin-top: 24px;">
+            <h3 style="margin-bottom: 12px; font-size: 1.125rem; font-weight: 600;">💾 Backup & Restore</h3>
+            <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 16px;">
+              Export your data to keep a backup, or import to restore on a new device.
+            </p>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button id="exportDataBtn" class="btn-secondary btn-sm">⬇️ Export Data</button>
+              <label for="importDataFile" class="btn-secondary btn-sm" style="margin: 0; display: inline-block; cursor: pointer;">
+                ⬆️ Import Data
+                <input type="file" id="importDataFile" accept=".json" style="display: none;">
+              </label>
+            </div>
+          </div>
+
+          <div id="shoppingList" class="shopping-list-section"></div>
+        </div>
+
+        <!-- Recipes Tab -->
+        <div id="recipesTab" class="tab-content">
+          <div class="page-header">
+            <h2 class="page-title">Recipes</h2>
+            <p class="page-subtitle">Browse and search your cocktail collection</p>
+          </div>
+
+          <!-- Search Section -->
+          <div id="searchSection" class="search-section">
+            <div class="search-title">🔍 Find Drinks by Ingredient</div>
+            <div class="search-subtitle">Select an ingredient from your bar to find matching cocktails</div>
+
+            <div class="search-controls">
+              <select id="ingredientSelect">
+                <option value="">-- Select an ingredient --</option>
+              </select>
+              <button id="searchBtn" class="search-btn">Find Drinks</button>
+            </div>
+
+            <div id="searchResponse" class="search-response"></div>
+          </div>
+
+          <!-- Filter Controls -->
+          <div id="filterControls" class="filter-controls" style="display: none;">
+            <div class="quick-actions-bar">
+              <button id="randomCocktailBtn" class="quick-action-btn">🎲 Random Cocktail</button>
+              <button id="perfectMatchesBtn" class="quick-action-btn">✨ Perfect Matches</button>
+              <button id="almostThereBtn" class="quick-action-btn">🎯 Missing 1 Ingredient</button>
+              <button id="clearFiltersBtn" class="quick-action-btn-secondary">↺ Clear Filters</button>
+            </div>
+
+            <div class="sort-bar">
+              <select id="sortSelect" class="sort-select">
+                <option value="compatibility">Sort by Compatibility</option>
+                <option value="name-asc">Sort A-Z</option>
+                <option value="name-desc">Sort Z-A</option>
+              </select>
+            </div>
+
+            <div id="activeFilters" class="active-filters" style="display: none;"></div>
+            <div id="resultsCount" class="results-count"></div>
+          </div>
+
+          <!-- Recently Viewed -->
+          <div id="recentlyViewedSection" class="recently-viewed-section" style="display: none;">
+            <div class="section-subtitle">👁️ Recently Viewed</div>
+            <div id="recentlyViewedList" class="recently-viewed-list"></div>
           </div>
 
           <!-- Results -->
@@ -75,13 +150,10 @@
         <div id="inventoryTab" class="tab-content">
           <div class="page-header">
             <h2 class="page-title">My Bar</h2>
-            <p class="page-subtitle">Manage your inventory</p>
+            <p class="page-subtitle">Manage your bottle collection</p>
           </div>
 
-          <div class="card">
-            <p>Inventory management coming soon...</p>
-            <p>For now, use the CSV upload in the Recipes tab.</p>
-          </div>
+          <div id="inventoryManager" class="inventory-manager" style="display: block;"></div>
         </div>
 
         <!-- Favorites Tab -->
@@ -91,8 +163,11 @@
             <p class="page-subtitle">Your saved cocktails</p>
           </div>
 
-          <div class="card">
-            <p>Favorites feature coming soon...</p>
+          <div id="favoritesListSection"></div>
+
+          <div style="margin-top: 32px;">
+            <h3 class="section-subtitle">📝 Made This</h3>
+            <div id="madeThisListSection"></div>
           </div>
         </div>
 
@@ -100,12 +175,53 @@
         <div id="aiTab" class="tab-content">
           <div class="page-header">
             <h2 class="page-title">AI Bartender</h2>
-            <p class="page-subtitle">Get personalized cocktail recommendations</p>
+            <p class="page-subtitle">Get personalized cocktail recommendations powered by Claude</p>
           </div>
 
-          <div class="card">
-            <p>AI Bartender feature coming soon...</p>
-            <p>This will use Claude AI to give you personalized recommendations based on your inventory.</p>
+          <div class="ai-search-section" style="display: block;">
+            <!-- API Key Section -->
+            <div class="api-key-section">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <strong>Anthropic API Key</strong>
+                <button id="toggleApiKeyBtn" class="collapse-btn">Show/Hide</button>
+              </div>
+              <div id="apiKeyInputContainer" style="display: none;">
+                <input type="password" id="apiKeyInput" placeholder="Enter your API key" />
+                <div id="apiKeyStatus" class="api-key-status"></div>
+                <p style="font-size: 0.8125rem; margin-top: 8px; color: var(--text-secondary);">
+                  Get your API key from <a href="https://console.anthropic.com/" target="_blank" style="color: var(--primary);">Anthropic Console</a>
+                </p>
+              </div>
+            </div>
+
+            <!-- Context Info -->
+            <div class="ai-context-info">
+              <strong>🎯 What the AI Knows About You:</strong>
+              <ul>
+                <li>Your complete bottle collection with tasting notes</li>
+                <li>Your favorites and what you've made before</li>
+                <li>Your ratings and personal notes</li>
+                <li>All available recipes in your collection</li>
+              </ul>
+            </div>
+
+            <!-- Query Section -->
+            <div class="ai-query-section">
+              <label for="aiQueryInput"><strong>Ask the AI Bartender:</strong></label>
+              <textarea id="aiQueryInput" placeholder="Example: What can I make with my Smith & Cross rum that highlights its funky banana notes?"></textarea>
+
+              <div class="ai-button-row">
+                <button id="aiQueryBtn" class="ai-query-btn">Send Query</button>
+                <button id="clearConversationBtn" class="collapse-btn">Clear Conversation</button>
+              </div>
+
+              <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 8px;">
+                💡 Tip: Press <strong>Enter</strong> to send, <strong>Shift+Enter</strong> for new line
+              </p>
+            </div>
+
+            <!-- Response Area -->
+            <div id="aiSearchResponse" class="ai-response-area"></div>
           </div>
         </div>
       </main>
@@ -119,7 +235,6 @@
       </div>
     </div>
 
-    <!-- Vite will inject the script -->
     <script type="module" src="/main.js"></script>
   </body>
 </html>
