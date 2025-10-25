@@ -35,6 +35,9 @@ import { areSimilarIngredients } from './utils/fuzzyMatch.js';
 // Import app state
 import { APP } from './app.js';
 
+// Import authentication
+import { initAuth } from './services/authIntegration.js';
+
 // DOM Elements
 const elements = {};
 
@@ -1728,5 +1731,8 @@ function showError(message) {
 /**
  * Initialize and run the app
  */
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+  init();
+  initAuth(); // Initialize authentication
+});
 
