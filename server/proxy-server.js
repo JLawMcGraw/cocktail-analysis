@@ -4,12 +4,12 @@
  *
  * Usage:
  * 1. Install dependencies: npm install
- * 2. Run server: node proxy-server.js
+ * 2. Run server: node server/proxy-server.js (or npm run proxy)
  * 3. Server runs on http://localhost:3000
  */
 
-const http = require('http');
-const https = require('https');
+import http from 'http';
+import https from 'https';
 
 const PORT = 3000;
 const ANTHROPIC_API = 'api.anthropic.com';
