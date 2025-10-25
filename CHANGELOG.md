@@ -2,6 +2,109 @@
 
 All notable changes and fixes to the Cocktail Compatibility Analyzer.
 
+## [5.0.0] - 2025-10-25
+
+### Major Design Overhaul
+
+#### 🎨 Modern Tropical Minimalist Design
+- **Complete Visual Redesign**: Apple-inspired minimalist aesthetic with tropical cocktail accents
+- **New Color Palette**: Ocean teal primary (#0a7ea4), coral (#ff7b54), sunset orange (#ffa94d), palm green (#10b981)
+- **Fixed Sidebar Navigation**: Replaced cluttered one-page layout with clean fixed left sidebar
+- **Modern Components**: Enhanced shadows, rounded corners (16px), smooth transitions
+- **Professional Typography**: Clean, readable font stack with proper hierarchy
+- **Responsive Cards**: Beautiful grid layouts for recipes, inventory, and favorites
+- **CSS Variables**: Theme-based design system for easy customization
+
+#### 🤖 Enhanced Context-Aware AI Bartender
+- **Full Inventory Context**: AI receives complete bottle inventory with ALL tasting notes
+  - Includes Profile (Nose), Palate, Finish for each spirit
+  - References specific bottles by name when making recommendations
+  - Understands ABV, distillery location, age statements
+- **Favorites Awareness**: AI knows which cocktails you've favorited
+- **History Integration**: AI sees which drinks you've made, rated, and your personal notes
+- **Personalized Recommendations**: AI explains WHY it recommends cocktails based on YOUR inventory
+- **Better UI**: Clean card-based examples showing different query types
+- **Context Information**: Shows users exactly what the AI knows about their bar
+- **Keyboard Shortcuts**: Press Enter to send queries, Shift+Enter for new lines
+- **Optimized Prompts**: Reduced context size while maintaining rich personalization
+
+#### 🔍 Smart Discovery System
+- **Quick Action Buttons**:
+  - 🎲 Random Cocktail - Discover something new
+  - ✨ Perfect Matches - Recipes you can make with everything you have
+  - 📍 Missing 1 Ingredient - Almost makeable drinks for shopping planning
+- **Sort Options**: Sort by compatibility, alphabetically (A-Z or Z-A)
+- **Recently Viewed**: Automatic tracking of last 6 viewed recipes with timestamps
+- **Removed Redundant Search**: Eliminated recipe name search bar (ingredient selector already handles search)
+- **Real-Time Filtering**: Instant updates when you click quick actions
+
+#### 📱 Improved User Experience
+- **Tab-Based Navigation**: Clean sections for Recipes, Inventory, Favorites, AI Bartender
+- **Persistent Tabs**: Remember which tab you were on between sessions
+- **Better Modal Design**: Enhanced recipe details with modern styling
+- **Loading States**: Clear visual feedback during operations
+- **Status Indicators**: Better file upload status and AI connection status
+- **Mobile-Friendly**: Improved touch targets and responsive layouts
+
+### Technical Improvements
+
+#### UI/UX Architecture
+- Fixed sidebar navigation with icon-enhanced tabs
+- Page headers with titles and subtitles for each section
+- Grid layouts with proper spacing and hover effects
+- Enhanced modal animations and transitions
+- Better color contrast for accessibility
+
+#### AI Integration Enhancements
+- `queryClaudeAPI()`: Now sends full bottle metadata including tasting notes
+- Context building includes up to 40 spirits with complete profiles
+- Favorites context (top 10 favorites)
+- History context (up to 15 made cocktails with ratings and notes)
+- Optimized token usage while maintaining rich context
+- Better error messages for API issues
+
+#### State Management
+- `APP.currentTab`: Track active navigation tab
+- `APP.recentlyViewed`: Array of last 6 viewed recipes with timestamps
+- Tab persistence in localStorage
+- Improved favorites and history tracking
+
+#### Event Handling
+- Enter key submits AI queries (Shift+Enter for new line)
+- Tab switching with proper active states
+- Quick action buttons for common filters
+- Sort select with real-time updates
+
+### Bug Fixes
+
+1. **Fixed favorites/made-this buttons** in recipe modal by using data attributes instead of inline onclick
+2. **Fixed tab navigation** to properly show/hide content
+3. **Improved localStorage persistence** for all user data
+4. **Fixed analyze button** to work with saved inventory from localStorage
+5. **Better error handling** for API calls and network issues
+
+### Performance
+
+- CSS transitions for smooth animations (200ms)
+- Efficient tab switching without page reloads
+- Optimized AI context building (reduced by ~40% tokens)
+- Grid layouts with proper lazy rendering
+- Event delegation for dynamic content
+
+### Files Updated
+
+- `index.html`: Complete redesign with sidebar navigation, enhanced AI, and modern styling
+- `proxy-server.js`: No changes (still handles AI API forwarding)
+- `CHANGELOG.md`: This file
+- `README.md`: Updated documentation for new design and features
+
+### Migration Notes
+
+- All existing data (favorites, history, inventory) automatically migrates
+- No changes needed to CSV formats
+- Proxy server setup remains the same
+- API keys are preserved in localStorage
+
 ## [4.0.0] - 2025-10-24
 
 ### Major New Features

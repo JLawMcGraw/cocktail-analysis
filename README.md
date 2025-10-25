@@ -1,8 +1,15 @@
 # Cocktail Compatibility Analyzer
 
-A web application that helps you review your bar stock and match it to cocktail recipes from your collection.
+A beautiful, modern web application that helps you discover cocktails you can make with your bar stock. Features a tropical minimalist design, context-aware AI bartender, and comprehensive inventory management.
 
 ## Features
+
+### 🎨 Modern Design (v5.0)
+- **Apple-Inspired Interface**: Clean minimalist design with tropical cocktail accents
+- **Fixed Sidebar Navigation**: Easy access to Recipes, Inventory, Favorites, and AI Bartender
+- **Tropical Color Palette**: Ocean teal, coral, sunset orange, and palm green
+- **Smooth Animations**: Professional transitions and hover effects
+- **Responsive Layout**: Works beautifully on desktop and mobile
 
 ### Core Functionality
 - **Upload Bar Stock**: Import your ingredient inventory via CSV with full metadata (12 columns supported)
@@ -10,10 +17,28 @@ A web application that helps you review your bar stock and match it to cocktail 
 - **Compatibility Analysis**: See which cocktails you can make with what you have
 - **Fuzzy Ingredient Matching**: Automatically handles spelling variations like "passionfruit" vs "passion fruit"
 - **Smart Shopping List**: Discover which ingredients would unlock the most new recipes
-- **Ingredient Search**: Find cocktails that use specific ingredients from your bar
+- **Quick Discovery**: Random cocktail, perfect matches, and almost-makeable drinks
 - **Detailed Recipe View**: See full instructions, ingredients, and what you're missing
+- **Recently Viewed**: Automatic tracking of your last 6 viewed recipes
 
-### New in v4.0!
+### 🤖 New in v5.0: Enhanced Context-Aware AI!
+
+The AI bartender now knows EVERYTHING about your bar and preferences:
+
+- **Full Inventory Awareness**: AI sees every bottle with complete tasting notes (Nose, Palate, Finish)
+- **Personalized Recommendations**: References YOUR specific bottles by name
+- **Favorites Integration**: AI knows which cocktails you love
+- **History Awareness**: Sees what you've made, rated, and your personal notes
+- **Smart Context**: Understands ABV, distillery location, age statements of your spirits
+- **Keyboard Shortcuts**: Press **Enter** to send queries, **Shift+Enter** for new lines
+- **Rich Examples**: Helpful example queries to inspire discovery
+
+**Example AI Conversation:**
+> "What can I make with my Smith & Cross that highlights its funky banana notes?"
+>
+> *AI Response: "I see you have Smith & Cross with those beautiful overripe banana and pineapple notes! Since you rated the Jungle Bird 5 stars, you might also love..."*
+
+### Previous Features (v4.0)
 
 #### 📦 Complete Bottle Data Preservation
 - **12-Column CSV Support**: Preserve ALL your bottle metadata
@@ -78,12 +103,24 @@ A web application that helps you review your bar stock and match it to cocktail 
 
 ## AI-Powered Search
 
-The app now includes AI-powered cocktail recommendations using Claude! You can:
+The app includes a **context-aware AI bartender** powered by Claude that knows YOUR bar! The AI:
 
-- Ask questions in natural language ("What can I make that's refreshing?")
-- Search by tasting notes ("I have a funky, high-ester Jamaican rum")
-- Find cocktails for specific occasions ("Show me easy tiki drinks")
-- Get personalized recommendations based on flavor profiles
+- **Sees your complete inventory** with tasting notes (Nose, Palate, Finish)
+- **Knows your favorites** and what you've made before
+- **References specific bottles** from your bar when making recommendations
+- **Understands ratings** you've given to cocktails
+- **Reads your personal notes** to learn your preferences
+
+**Keyboard Shortcuts:**
+- Press **Enter** to send your query
+- Press **Shift+Enter** to add a new line in your message
+
+You can ask questions like:
+- "What cocktails highlight my Navy strength rum?"
+- "What can I make with funky, high-ester Jamaican rum?"
+- "I want something citrus-forward and refreshing"
+- "Recommend something based on my 5-star favorites"
+- "What's a good beginner tiki drink from my bar?"
 
 ### Setting Up AI Search
 
@@ -112,12 +149,58 @@ The app now includes AI-powered cocktail recommendations using Claude! You can:
 
 ### AI Search Examples
 
-- "What cocktails can I make with a funky, high-ester Jamaican rum?"
-- "Recommend drinks for a hot summer day"
-- "What can I make with my Hamilton 86 that has notes of molasses and caramel?"
-- "Show me tiki drinks with tropical flavors"
-- "I want something citrus-forward and refreshing"
-- "What's the easiest cocktail I can make right now?"
+The AI is context-aware and can reference your specific bottles and preferences:
+
+- "What cocktails highlight my Smith & Cross rum with its funky banana notes?"
+- "Based on my 5-star ratings, what else would I enjoy?"
+- "I want something citrus-forward using my bar stock"
+- "What can I make that's similar to [favorite cocktail]?"
+- "Recommend an easy tiki drink with what I have"
+- "What should I make tonight based on what I've enjoyed before?"
+
+The AI will respond with recommendations that specifically reference YOUR bottles, YOUR favorites, and YOUR tasting history.
+
+## Navigation & Interface
+
+### Sidebar Navigation (v5.0)
+
+The app features a modern fixed sidebar with four main sections:
+
+1. **📊 Recipes** - Browse all cocktails with quick filters:
+   - 🎲 Random Cocktail - Discover something new
+   - ✨ Perfect Matches - Everything you need is in stock
+   - 📍 Missing 1 Ingredient - Almost makeable drinks for shopping
+   - Sort by compatibility, A-Z, or Z-A
+   - Recently Viewed section (last 6 recipes)
+
+2. **🏠 Inventory** - Manage your bar stock:
+   - View all bottles with complete metadata
+   - Add new bottles manually
+   - Remove bottles you've run out of
+   - Export inventory to CSV
+   - Real-time recipe updates when inventory changes
+
+3. **❤️ Favorites** - Your personal collection:
+   - **Favorites** sub-tab: All your hearted cocktails
+   - **Made This** sub-tab: Cocktails you've actually made
+   - View ratings, notes, and make-dates for each
+   - Quick access to your proven favorites
+
+4. **🤖 AI Bartender** - Context-aware discovery:
+   - Ask questions in natural language
+   - AI sees your complete inventory with tasting notes
+   - Get personalized recommendations
+   - Reference your favorites and history
+   - Example queries for inspiration
+
+### Design Features
+
+- **Tropical Color Palette**: Ocean teal, coral, sunset orange, palm green
+- **Smooth Transitions**: Professional animations throughout
+- **Responsive Grid Layouts**: Clean card-based designs
+- **Modern Typography**: Clear hierarchy and readability
+- **Enhanced Shadows**: Subtle depth and dimension
+- **Tab Persistence**: Remembers which section you were viewing
 
 ## CSV File Formats
 
@@ -264,17 +347,21 @@ Sample files are included:
 
 While the current version is much improved, here are potential future enhancements:
 
-1. ~~**Fuzzy Matching**: Use string similarity algorithms for even better ingredient matching~~ ✅ Implemented!
-2. ~~**AI-Powered Search**: Natural language queries and tasting note search~~ ✅ Implemented!
-3. **Local Storage**: Save bar inventory and recipe data between sessions
-4. **Export Results**: Download your makeable recipes list
-5. **Recipe Sorting**: Sort by compatibility, name, or ingredients needed
-6. **Ingredient Substitutions**: Suggest alternatives for missing ingredients
-7. **Mobile Optimization**: Better touch targets and responsive design
-8. **Dark Mode**: Theme toggle for different preferences
-9. **Recipe Filtering**: Filter by spirit type, glass, complexity
-10. **Batch Operations**: Mark multiple recipes as favorites
-11. **Print Stylesheet**: Print-friendly recipe cards
+1. ~~**Fuzzy Matching**: Use string similarity algorithms for even better ingredient matching~~ ✅ Implemented in v3.0!
+2. ~~**AI-Powered Search**: Natural language queries and tasting note search~~ ✅ Implemented in v4.0!
+3. ~~**Local Storage**: Save bar inventory and recipe data between sessions~~ ✅ Implemented in v4.0!
+4. ~~**Recipe Sorting**: Sort by compatibility, name, or ingredients needed~~ ✅ Implemented in v5.0!
+5. ~~**Modern Design**: Clean, professional interface with better UX~~ ✅ Implemented in v5.0!
+6. ~~**Favorites & History**: Track cocktails you've made and loved~~ ✅ Implemented in v4.0!
+7. ~~**Context-Aware AI**: AI that knows your specific bottles and preferences~~ ✅ Implemented in v5.0!
+8. **Export Results**: Download your makeable recipes list
+9. **Ingredient Substitutions**: Suggest alternatives for missing ingredients
+10. **Dark Mode**: Theme toggle for different preferences
+11. **Recipe Filtering**: Filter by spirit type, glass, complexity
+12. **Batch Operations**: Mark multiple recipes as favorites
+13. **Print Stylesheet**: Print-friendly recipe cards
+14. **Mobile App Version**: Native mobile experience
+15. **Recipe Contributions**: Community recipe sharing
 
 ### Architecture Notes
 
@@ -350,7 +437,7 @@ cocktail-analysis/
 
 4. **Browser-Only**: No backend, all processing happens in browser. Large recipe collections (1000+) might be slow.
 
-5. **No Persistence**: Data is lost on page reload.
+5. ~~**No Persistence**: Data is lost on page reload.~~ ✅ Fixed in v4.0! Now uses localStorage for all data.
 
 ## Tips for Best Results
 
