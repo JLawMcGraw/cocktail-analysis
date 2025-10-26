@@ -37,12 +37,16 @@ app.use('/api/favorites', favoritesRoutes);
 
 // Anthropic API Proxy
 app.post('/api/messages', (req, res) => {
-  const apiKey = req.headers['x-api-key'];
+  // Use server-side API key from environment
+  const apiKey = process.env.ANTHROPIC_API_KEY;
 
-  if (!apiKey) {
-    console.error('❌ AI Proxy: Missing API key');
-    res.writeHead(400, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Missing x-api-key header. Please add your Anthropic API key in the AI tab.' }));
+  if (!apiKey || apiKey === 'your-anthropic-api-key-here') {
+    console.error('❌ AI Proxy: No API key configured on server');
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      error: 'AI feature not configured',
+      message: 'Server administrator needs to add ANTHROPIC_API_KEY to .env file. See .env.example for details.'
+    }));
     return;
   }
 

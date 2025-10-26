@@ -12,21 +12,13 @@ import { APP } from '../app.js';
 
 /**
  * Handle AI query
+ * API key is handled server-side
  */
 export async function handleAIQuery(elements, callbacks) {
   const query = elements.aiQueryInput.value.trim();
 
   if (!query) {
     alert('Please enter a question or search query');
-    return;
-  }
-
-  if (!APP.apiKey) {
-    alert('Please enter your Anthropic API key first');
-    if (elements.apiKeyInput) {
-      elements.apiKeyInputContainer.style.display = 'block';
-      elements.apiKeyInput.focus();
-    }
     return;
   }
 
@@ -58,7 +50,7 @@ export async function handleAIQuery(elements, callbacks) {
       history: APP.history,
     };
 
-    const result = await queryClaudeAPI(query, APP.conversationHistory, APP.apiKey, context);
+    const result = await queryClaudeAPI(query, APP.conversationHistory, context);
     displayAIRecommendations(result, elements, callbacks);
   } catch (error) {
     elements.aiSearchResponse.innerHTML = `<div style="padding: 20px; color: #721c24; background: #f8d7da; border-radius: 8px;">❌ Error: ${escapeHtml(error.message)}</div>`;

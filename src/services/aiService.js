@@ -6,13 +6,13 @@ const API_URL = 'http://localhost:3000/api/messages';
 
 /**
  * Query Claude API with conversation history
+ * Server-side API key is used automatically
  * @param {string} prompt - User prompt
  * @param {Array} conversationHistory - Previous messages
- * @param {string} apiKey - Anthropic API key
  * @param {Object} context - Application context (inventory, favorites, etc.)
  * @returns {Promise<string>} - AI response
  */
-export async function queryClaudeAPI(prompt, conversationHistory, apiKey, context) {
+export async function queryClaudeAPI(prompt, conversationHistory, context) {
   // Build system prompt with full context
   const systemPrompt = buildSystemPrompt(context);
 
@@ -36,7 +36,6 @@ export async function queryClaudeAPI(prompt, conversationHistory, apiKey, contex
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
       },
       body: JSON.stringify(requestBody),
     });
@@ -46,7 +45,7 @@ export async function queryClaudeAPI(prompt, conversationHistory, apiKey, contex
     if (!response.ok) {
       // Handle specific error cases
       if (response.status === 401) {
-        throw new Error('Invalid API key. Please check your Anthropic API key and try again.');
+        throw new Error('Server API key is invalid. Please contact the administrator.');
       }
       if (response.status === 400) {
         const errorMsg = data.error?.message || data.error || 'Bad request';
@@ -56,8 +55,8 @@ export async function queryClaudeAPI(prompt, conversationHistory, apiKey, contex
         throw new Error('Rate limit exceeded. Please wait a moment and try again.');
       }
       if (response.status === 500) {
-        const errorDetails = data.error || data.details || '';
-        throw new Error(`Server error: ${errorDetails}. Please check the server console for details.`);
+        const errorDetails = data.message || data.error || '';
+        throw new Error(`${errorDetails}`);
       }
 
       // Generic error
