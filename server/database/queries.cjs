@@ -223,10 +223,62 @@ async function deleteAllUserRecipes(userId) {
 /**
  * Bulk insert recipes
  */
+/**
+ * Convert CSV recipe format to database format
+ * Collects "Ingredient 1", "Ingredient 2", etc. into a JSON array
+ */
+function convertRecipeFormat(recipe) {
+  // If already has ingredients field, return as-is
+  if (recipe.ingredients || recipe.Ingredients) {
+    const ingredients = recipe.ingredients || recipe.Ingredients;
+    // If it's already a string (newline-separated), convert to array
+    if (typeof ingredients === 'string') {
+      const ingredientsArray = ingredients.split('\n').filter(i => i.trim());
+      return {
+        name: recipe.name || recipe['Drink Name'] || '',
+        ingredients: JSON.stringify(ingredientsArray),
+        instructions: recipe.instructions || recipe.Instructions || '',
+        glass: recipe.glass || recipe.Glass || '',
+      };
+    }
+    // If it's already an array
+    if (Array.isArray(ingredients)) {
+      return {
+        name: recipe.name || recipe['Drink Name'] || '',
+        ingredients: JSON.stringify(ingredients),
+        instructions: recipe.instructions || recipe.Instructions || '',
+        glass: recipe.glass || recipe.Glass || '',
+      };
+    }
+  }
+
+  // Convert from CSV format (Ingredient 1, Ingredient 2, etc.)
+  const ingredients = [];
+  let i = 1;
+  while (recipe[`Ingredient ${i}`]) {
+    const ing = recipe[`Ingredient ${i}`].trim();
+    if (ing) {
+      ingredients.push(ing);
+    }
+    i++;
+  }
+
+  return {
+    name: recipe['Drink Name'] || recipe.name || '',
+    ingredients: JSON.stringify(ingredients),
+    instructions: recipe.Instructions || recipe.instructions || '',
+    glass: recipe.Glass || recipe.glass || '',
+  };
+}
+
+/**
+ * Bulk insert recipes (converts CSV format to database format)
+ */
 async function bulkInsertRecipes(userId, recipes) {
   const insertedIds = [];
   for (const recipe of recipes) {
-    const id = await addRecipe(userId, recipe);
+    const converted = convertRecipeFormat(recipe);
+    const id = await addRecipe(userId, converted);
     insertedIds.push(id);
   }
   return insertedIds;
