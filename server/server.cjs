@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const https = require('https');
 const helmet = require('helmet');
+const { HttpsProxyAgent } = require('https-proxy-agent');
 require('dotenv').config();
 
 // Debug: Check if .env loaded
@@ -9,6 +10,7 @@ console.log('🔍 .env file check on startup:');
 console.log('  PORT:', process.env.PORT);
 console.log('  ANTHROPIC_API_KEY exists?', !!process.env.ANTHROPIC_API_KEY);
 console.log('  ANTHROPIC_API_KEY length:', process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0);
+console.log('  HTTPS_PROXY:', process.env.HTTPS_PROXY || process.env.https_proxy || 'none');
 
 const { initializeDatabase } = require('./database/db.cjs');
 const authRoutes = require('./routes/auth.cjs');
@@ -62,6 +64,8 @@ app.post('/api/messages', (req, res) => {
 
   console.log('🤖 AI Proxy: Forwarding request to Anthropic API...');
 
+  // Use proxy if environment variable is set
+  const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy;
   const options = {
     hostname: 'api.anthropic.com',
     port: 443,
@@ -73,6 +77,12 @@ app.post('/api/messages', (req, res) => {
       'anthropic-version': '2023-06-01',
     },
   };
+
+  // Add proxy agent if proxy is configured
+  if (proxyUrl) {
+    console.log('🌐 Using proxy:', proxyUrl.split('@')[1] || proxyUrl.split('://')[1]);
+    options.agent = new HttpsProxyAgent(proxyUrl);
+  }
 
   let responseData = '';
 
