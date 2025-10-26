@@ -1,29 +1,39 @@
 const express = require('express');
 const cors = require('cors');
 const https = require('https');
+const helmet = require('helmet');
 require('dotenv').config();
 
-const { initDatabase } = require('./database');
+const { initializeDatabase } = require('./database/db');
 const authRoutes = require('./routes/auth');
 const inventoryRoutes = require('./routes/inventory');
 const recipesRoutes = require('./routes/recipes');
-const userDataRoutes = require('./routes/user-data');
+const favoritesRoutes = require('./routes/favorites');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Database is automatically initialized when the module is loaded
-// (see database.js)
+// Initialize database on startup
+(async () => {
+  try {
+    await initializeDatabase();
+    console.log('✅ Database ready');
+  } catch (error) {
+    console.error('❌ Failed to initialize database:', error);
+    process.exit(1);
+  }
+})();
 
 // Middleware
+app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Increase limit for large CSV data
 
 // API Routes
-app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/recipes', recipesRoutes);
-app.use('/api/user-data', userDataRoutes);
+app.use('/api/favorites', favoritesRoutes);
 
 // Anthropic API Proxy (from original proxy-server.js)
 app.post('/api/messages', (req, res) => {
@@ -92,21 +102,37 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`API endpoints available:`);
-  console.log(`  POST   /api/auth/signup`);
-  console.log(`  POST   /api/auth/login`);
-  console.log(`  GET    /api/auth/me`);
-  console.log(`  POST   /api/auth/logout`);
-  console.log(`  GET    /api/inventory`);
-  console.log(`  POST   /api/inventory`);
-  console.log(`  GET    /api/recipes`);
-  console.log(`  POST   /api/recipes`);
-  console.log(`  GET    /api/user-data/favorites`);
-  console.log(`  POST   /api/user-data/favorites`);
-  console.log(`  GET    /api/user-data/history`);
-  console.log(`  POST   /api/user-data/history`);
-  console.log(`  POST   /api/messages (Anthropic proxy)`);
+  console.log('');
+  console.log('🚀 Cocktail Analyzer Server');
+  console.log(`📍 Server running on http://localhost:${PORT}`);
+  console.log('');
+  console.log('📋 Authentication Endpoints:');
+  console.log(`  POST   /auth/signup          - Create account`);
+  console.log(`  POST   /auth/login           - Login`);
+  console.log(`  GET    /auth/me              - Get profile (protected)`);
+  console.log(`  POST   /auth/logout          - Logout (protected)`);
+  console.log('');
+  console.log('📋 API Endpoints (all protected):');
+  console.log(`  GET    /api/inventory        - Get inventory`);
+  console.log(`  POST   /api/inventory        - Add item`);
+  console.log(`  POST   /api/inventory/bulk   - Bulk upload`);
+  console.log(`  PUT    /api/inventory/:id    - Update item`);
+  console.log(`  DELETE /api/inventory/:id    - Delete item`);
+  console.log('');
+  console.log(`  GET    /api/recipes          - Get recipes`);
+  console.log(`  POST   /api/recipes          - Add recipe`);
+  console.log(`  POST   /api/recipes/bulk     - Bulk upload`);
+  console.log(`  PUT    /api/recipes/:id      - Update recipe`);
+  console.log(`  DELETE /api/recipes/:id      - Delete recipe`);
+  console.log('');
+  console.log(`  GET    /api/favorites        - Get favorites`);
+  console.log(`  POST   /api/favorites        - Add favorite`);
+  console.log(`  DELETE /api/favorites/:name  - Remove favorite`);
+  console.log(`  GET    /api/favorites/history - Get history`);
+  console.log(`  POST   /api/favorites/history - Update history`);
+  console.log('');
+  console.log(`  POST   /api/messages         - Anthropic AI proxy`);
+  console.log('');
 });
 
 module.exports = app;
