@@ -4,6 +4,12 @@ const https = require('https');
 const helmet = require('helmet');
 require('dotenv').config();
 
+// Debug: Check if .env loaded
+console.log('🔍 .env file check on startup:');
+console.log('  PORT:', process.env.PORT);
+console.log('  ANTHROPIC_API_KEY exists?', !!process.env.ANTHROPIC_API_KEY);
+console.log('  ANTHROPIC_API_KEY length:', process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0);
+
 const { initializeDatabase } = require('./database/db.cjs');
 const authRoutes = require('./routes/auth.cjs');
 const inventoryRoutes = require('./routes/inventory.cjs');
@@ -39,6 +45,10 @@ app.use('/api/favorites', favoritesRoutes);
 app.post('/api/messages', (req, res) => {
   // Use server-side API key from environment
   const apiKey = process.env.ANTHROPIC_API_KEY;
+
+  console.log('🔍 DEBUG: API Key exists?', !!apiKey);
+  console.log('🔍 DEBUG: API Key length:', apiKey ? apiKey.length : 0);
+  console.log('🔍 DEBUG: API Key starts with:', apiKey ? apiKey.substring(0, 15) : 'N/A');
 
   if (!apiKey || apiKey === 'your-anthropic-api-key-here') {
     console.error('❌ AI Proxy: No API key configured on server');
@@ -94,11 +104,14 @@ app.post('/api/messages', (req, res) => {
 
   proxyReq.on('error', (error) => {
     console.error('❌ AI Proxy network error:', error.message);
+    console.error('❌ Full error:', error);
+    console.error('❌ Error code:', error.code);
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       error: 'Failed to connect to Anthropic API',
       details: error.message,
-      tip: 'Check your internet connection and API key validity'
+      code: error.code,
+      tip: 'Check your internet connection and API key validity. If key starts with sk-ant-api03, it should be valid format.'
     }));
   });
 
