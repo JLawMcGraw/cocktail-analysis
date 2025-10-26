@@ -82,7 +82,7 @@ app.get('/api/health', (req, res) => {
 
 // Error handling
 app.use((err, req, res, next) => {
-  console.error('Server error:', error);
+  console.error('Server error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
 

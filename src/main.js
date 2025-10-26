@@ -1721,10 +1721,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     displayResults(results);
     displayShoppingList(results);
     setupSearch();
+    displayInventoryManager();
+    displayFavorites();
+  } else {
+    // No data yet - show empty states
+    displayInventoryManager();
+    displayFavorites();
+    // Hide shopping list when no data
+    if (elements.shoppingList) {
+      elements.shoppingList.style.display = 'none';
+    }
   }
-
-  // Always display these UI components
-  displayInventoryManager();
-  displayFavorites();
 });
 
