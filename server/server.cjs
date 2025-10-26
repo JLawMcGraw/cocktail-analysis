@@ -78,6 +78,7 @@ app.post('/api/messages', (req, res) => {
 
   const proxyReq = https.request(options, (proxyRes) => {
     console.log(`   Response status: ${proxyRes.statusCode}`);
+    console.log(`   Response headers:`, proxyRes.headers);
 
     res.writeHead(proxyRes.statusCode, {
       'Content-Type': 'application/json',
@@ -93,7 +94,7 @@ app.post('/api/messages', (req, res) => {
       if (proxyRes.statusCode !== 200) {
         console.error('❌ AI Proxy Error:', {
           status: proxyRes.statusCode,
-          response: responseData.substring(0, 500)
+          response: responseData
         });
       } else {
         console.log('✅ AI Proxy: Request successful');
@@ -123,7 +124,13 @@ app.post('/api/messages', (req, res) => {
   req.on('end', () => {
     try {
       // Validate JSON before sending
-      JSON.parse(body);
+      const parsedBody = JSON.parse(body);
+      console.log('📤 Sending to Anthropic:');
+      console.log('   Model:', parsedBody.model);
+      console.log('   Max tokens:', parsedBody.max_tokens);
+      console.log('   Messages count:', parsedBody.messages?.length);
+      console.log('   Body size:', body.length, 'bytes');
+
       proxyReq.write(body);
       proxyReq.end();
     } catch (error) {
