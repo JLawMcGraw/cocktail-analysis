@@ -138,11 +138,18 @@ function processInventory(apiInventory) {
   }
 
   return apiInventory.map((item) => ({
-    Item: item.item_name,
-    Brand: item.brand || '',
-    Category: item.category || '',
-    'In Stock': item.in_stock ? 'TRUE' : 'FALSE',
-    'Tasting Notes': item.tasting_notes || '',
+    'Liquor Type': item.liquor_type || '',
+    Name: item.name || '',
+    'Stock Number': item.stock_number || 1,
+    'Detailed Spirit Classification': item.detailed_classification || '',
+    'Distillation Method': item.distillation_method || '',
+    'ABV (%)': item.abv || '',
+    'Distillery Location': item.distillery_location || '',
+    'Age Statement or Barrel Finish': item.age_statement || '',
+    'Additional Notes': item.additional_notes || '',
+    'Profile (Nose)': item.profile_nose || '',
+    Palate: item.palate || '',
+    Finish: item.finish || '',
   }));
 }
 
@@ -155,29 +162,30 @@ function processRecipes(apiRecipes) {
   }
 
   return apiRecipes.map((recipe) => {
-    const recipeObj = {
-      Drink: recipe.drink_name,
-      Category: recipe.category || '',
-      Glass: recipe.glass || '',
-      Instructions: recipe.instructions || '',
-    };
-
-    // Parse ingredients JSON
+    // Parse ingredients from JSON to newline-separated string
+    let ingredientsString = '';
     if (recipe.ingredients) {
       try {
         const ingredients = typeof recipe.ingredients === 'string'
           ? JSON.parse(recipe.ingredients)
           : recipe.ingredients;
 
-        ingredients.forEach((ing, index) => {
-          recipeObj[`Ingredient ${index + 1}`] = ing;
-        });
+        if (Array.isArray(ingredients)) {
+          ingredientsString = ingredients.join('\n');
+        }
       } catch (error) {
         console.error('Error parsing recipe ingredients:', error);
+        ingredientsString = recipe.ingredients; // Use as-is if parse fails
       }
     }
 
-    return recipeObj;
+    return {
+      'Drink Name': recipe.name || recipe.drink_name || '',
+      Ingredients: ingredientsString,
+      Category: recipe.category || '',
+      Glass: recipe.glass || '',
+      Instructions: recipe.instructions || '',
+    };
   });
 }
 
