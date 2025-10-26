@@ -40,10 +40,13 @@ app.post('/api/messages', (req, res) => {
   const apiKey = req.headers['x-api-key'];
 
   if (!apiKey) {
+    console.error('❌ AI Proxy: Missing API key');
     res.writeHead(400, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Missing x-api-key header' }));
+    res.end(JSON.stringify({ error: 'Missing x-api-key header. Please add your Anthropic API key in the AI tab.' }));
     return;
   }
+
+  console.log('🤖 AI Proxy: Forwarding request to Anthropic API...');
 
   const options = {
     hostname: 'api.anthropic.com',
@@ -57,25 +60,42 @@ app.post('/api/messages', (req, res) => {
     },
   };
 
+  let responseData = '';
+
   const proxyReq = https.request(options, (proxyRes) => {
+    console.log(`   Response status: ${proxyRes.statusCode}`);
+
     res.writeHead(proxyRes.statusCode, {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
     });
 
     proxyRes.on('data', (chunk) => {
+      responseData += chunk.toString();
       res.write(chunk);
     });
 
     proxyRes.on('end', () => {
+      if (proxyRes.statusCode !== 200) {
+        console.error('❌ AI Proxy Error:', {
+          status: proxyRes.statusCode,
+          response: responseData.substring(0, 500)
+        });
+      } else {
+        console.log('✅ AI Proxy: Request successful');
+      }
       res.end();
     });
   });
 
   proxyReq.on('error', (error) => {
-    console.error('Proxy request error:', error);
+    console.error('❌ AI Proxy network error:', error.message);
     res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Proxy request failed', details: error.message }));
+    res.end(JSON.stringify({
+      error: 'Failed to connect to Anthropic API',
+      details: error.message,
+      tip: 'Check your internet connection and API key validity'
+    }));
   });
 
   let body = '';
@@ -84,8 +104,16 @@ app.post('/api/messages', (req, res) => {
   });
 
   req.on('end', () => {
-    proxyReq.write(body);
-    proxyReq.end();
+    try {
+      // Validate JSON before sending
+      JSON.parse(body);
+      proxyReq.write(body);
+      proxyReq.end();
+    } catch (error) {
+      console.error('❌ AI Proxy: Invalid JSON in request body');
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid request format' }));
+    }
   });
 });
 

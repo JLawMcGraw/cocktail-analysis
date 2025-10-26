@@ -21,16 +21,46 @@ export function analyze(callbacks) {
     return;
   }
 
-  const results = runAnalysis(APP.editableInventory, APP.recipeData);
-  APP.allResults = results;
-  callbacks.displayResults(results);
-  callbacks.displayFavorites();
-  callbacks.displayShoppingList(results);
-  callbacks.setupSearch();
-  callbacks.displayRecentlyViewed();
+  // Get button and show loading state
+  const analyzeBtn = callbacks.elements?.analyzeBtn || document.getElementById('analyzeBtn');
+  if (analyzeBtn) {
+    analyzeBtn.disabled = true;
+    analyzeBtn.textContent = '⏳ Analyzing...';
+  }
 
-  // Switch to recipes tab
-  callbacks.switchTab('recipesTab');
+  // Small delay to show loading state
+  setTimeout(() => {
+    try {
+      const results = runAnalysis(APP.editableInventory, APP.recipeData);
+      APP.allResults = results;
+      callbacks.displayResults(results);
+      callbacks.displayFavorites();
+      callbacks.displayShoppingList(results);
+      callbacks.setupSearch();
+      callbacks.displayRecentlyViewed();
+
+      // Show success feedback
+      if (analyzeBtn) {
+        analyzeBtn.textContent = '✓ Analysis Complete!';
+        setTimeout(() => {
+          analyzeBtn.textContent = 'Analyze My Bar';
+          analyzeBtn.disabled = false;
+        }, 1500);
+      }
+
+      // Switch to recipes tab after a short delay
+      setTimeout(() => {
+        callbacks.switchTab('recipesTab');
+      }, 300);
+    } catch (error) {
+      console.error('Analysis error:', error);
+      if (analyzeBtn) {
+        analyzeBtn.textContent = 'Analyze My Bar';
+        analyzeBtn.disabled = false;
+      }
+      callbacks.showError('Analysis failed: ' + error.message);
+    }
+  }, 100);
 }
 
 /**

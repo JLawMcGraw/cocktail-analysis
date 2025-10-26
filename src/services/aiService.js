@@ -41,11 +41,29 @@ export async function queryClaudeAPI(prompt, conversationHistory, apiKey, contex
       body: JSON.stringify(requestBody),
     });
 
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-    }
-
     const data = await response.json();
+
+    if (!response.ok) {
+      // Handle specific error cases
+      if (response.status === 401) {
+        throw new Error('Invalid API key. Please check your Anthropic API key and try again.');
+      }
+      if (response.status === 400) {
+        const errorMsg = data.error?.message || data.error || 'Bad request';
+        throw new Error(`Request error: ${errorMsg}`);
+      }
+      if (response.status === 429) {
+        throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+      }
+      if (response.status === 500) {
+        const errorDetails = data.error || data.details || '';
+        throw new Error(`Server error: ${errorDetails}. Please check the server console for details.`);
+      }
+
+      // Generic error
+      const errorMsg = data.error?.message || data.error || response.statusText;
+      throw new Error(`API request failed (${response.status}): ${errorMsg}`);
+    }
 
     if (data.content && data.content[0] && data.content[0].text) {
       return data.content[0].text;
@@ -57,7 +75,7 @@ export async function queryClaudeAPI(prompt, conversationHistory, apiKey, contex
 
     // Provide helpful error messages
     if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
-      throw new Error('Cannot connect to proxy server. Please run: npm run proxy (or node server/proxy-server.js)');
+      throw new Error('Cannot connect to server. Make sure the backend is running (npm run server)');
     }
 
     throw error;
