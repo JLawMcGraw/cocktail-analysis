@@ -1,223 +1,126 @@
 /**
  * Authentication Pages
- * Login and Signup forms
+ * Login and Signup using the existing modal
  */
 
 import { login, signup } from '../services/api.js';
-import { escapeHtml } from '../utils/formatters.js';
 
 /**
- * Show login page
+ * Show login in existing modal
  */
-export function showLoginPage(onSuccess) {
-  const appContainer = document.getElementById('app');
-  if (!appContainer) return;
+export function showLoginModal(onSuccess) {
+  const modal = document.getElementById('authModal');
+  const form = document.getElementById('authForm');
+  const title = document.getElementById('authModalTitle');
+  const submitBtn = document.getElementById('authSubmitBtn');
+  const switchText = document.getElementById('authSwitchText');
+  const switchLink = document.getElementById('authSwitchLink');
+  const errorDiv = document.getElementById('authError');
+  const emailInput = document.getElementById('authEmail');
+  const passwordInput = document.getElementById('authPassword');
 
-  appContainer.innerHTML = `
-    <div class="auth-container">
-      <div class="auth-card">
-        <div class="auth-logo">🍹</div>
-        <h1 class="auth-title">Cocktail Analyzer</h1>
-        <p class="auth-subtitle">Login to access your bar</p>
+  // Set up for login
+  title.textContent = 'Login';
+  submitBtn.textContent = 'Login';
+  switchText.textContent = "Don't have an account?";
+  switchLink.textContent = 'Sign up';
+  errorDiv.style.display = 'none';
+  form.reset();
 
-        <form id="loginForm" class="auth-form">
-          <div class="form-group">
-            <label for="loginEmail">Email</label>
-            <input
-              type="email"
-              id="loginEmail"
-              name="email"
-              required
-              autocomplete="email"
-              placeholder="you@example.com"
-            />
-          </div>
+  // Show modal
+  modal.style.display = 'flex';
 
-          <div class="form-group">
-            <label for="loginPassword">Password</label>
-            <input
-              type="password"
-              id="loginPassword"
-              name="password"
-              required
-              autocomplete="current-password"
-              placeholder="Enter your password"
-            />
-          </div>
-
-          <div id="loginError" class="error-message" style="display: none;"></div>
-
-          <button type="submit" class="auth-btn" id="loginBtn">
-            Login
-          </button>
-        </form>
-
-        <div class="auth-footer">
-          <p>Don't have an account? <a href="#" id="showSignupLink">Sign up</a></p>
-        </div>
-      </div>
-    </div>
-  `;
-
-  // Handle login form submission
-  const form = document.getElementById('loginForm');
-  const errorDiv = document.getElementById('loginError');
-  const loginBtn = document.getElementById('loginBtn');
-
-  form.addEventListener('submit', async (e) => {
+  // Handle form submit
+  form.onsubmit = async (e) => {
     e.preventDefault();
 
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+    const email = emailInput.value;
+    const password = passwordInput.value;
 
-    // Disable button and show loading
-    loginBtn.disabled = true;
-    loginBtn.textContent = 'Logging in...';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Logging in...';
     errorDiv.style.display = 'none';
 
     try {
       await login(email, password);
-
-      // Success! Call the callback
-      if (onSuccess) {
-        onSuccess();
-      }
+      modal.style.display = 'none';
+      if (onSuccess) onSuccess();
     } catch (error) {
       errorDiv.textContent = error.message || 'Login failed. Please check your credentials.';
       errorDiv.style.display = 'block';
-      loginBtn.disabled = false;
-      loginBtn.textContent = 'Login';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Login';
     }
-  });
+  };
 
-  // Handle "show signup" link
-  document.getElementById('showSignupLink').addEventListener('click', (e) => {
+  // Handle switch to signup
+  switchLink.onclick = (e) => {
     e.preventDefault();
-    showSignupPage(onSuccess);
-  });
+    showSignupModal(onSuccess);
+  };
+
+  // Close modal
+  document.getElementById('authModalClose').onclick = () => {
+    modal.style.display = 'none';
+  };
 }
 
 /**
- * Show signup page
+ * Show signup in existing modal
  */
-export function showSignupPage(onSuccess) {
-  const appContainer = document.getElementById('app');
-  if (!appContainer) return;
+export function showSignupModal(onSuccess) {
+  const modal = document.getElementById('authModal');
+  const form = document.getElementById('authForm');
+  const title = document.getElementById('authModalTitle');
+  const submitBtn = document.getElementById('authSubmitBtn');
+  const switchText = document.getElementById('authSwitchText');
+  const switchLink = document.getElementById('authSwitchLink');
+  const errorDiv = document.getElementById('authError');
+  const emailInput = document.getElementById('authEmail');
+  const passwordInput = document.getElementById('authPassword');
 
-  appContainer.innerHTML = `
-    <div class="auth-container">
-      <div class="auth-card">
-        <div class="auth-logo">🍹</div>
-        <h1 class="auth-title">Cocktail Analyzer</h1>
-        <p class="auth-subtitle">Create your account</p>
+  // Set up for signup
+  title.textContent = 'Create Account';
+  submitBtn.textContent = 'Sign Up';
+  switchText.textContent = 'Already have an account?';
+  switchLink.textContent = 'Login';
+  errorDiv.style.display = 'none';
+  form.reset();
 
-        <form id="signupForm" class="auth-form">
-          <div class="form-group">
-            <label for="signupName">Name (optional)</label>
-            <input
-              type="text"
-              id="signupName"
-              name="name"
-              autocomplete="name"
-              placeholder="Your name"
-            />
-          </div>
+  // Show modal
+  modal.style.display = 'flex';
 
-          <div class="form-group">
-            <label for="signupEmail">Email</label>
-            <input
-              type="email"
-              id="signupEmail"
-              name="email"
-              required
-              autocomplete="email"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="signupPassword">Password</label>
-            <input
-              type="password"
-              id="signupPassword"
-              name="password"
-              required
-              autocomplete="new-password"
-              minlength="6"
-              placeholder="At least 6 characters"
-            />
-            <small class="form-hint">Minimum 6 characters</small>
-          </div>
-
-          <div class="form-group">
-            <label for="signupPasswordConfirm">Confirm Password</label>
-            <input
-              type="password"
-              id="signupPasswordConfirm"
-              name="passwordConfirm"
-              required
-              autocomplete="new-password"
-              placeholder="Re-enter your password"
-            />
-          </div>
-
-          <div id="signupError" class="error-message" style="display: none;"></div>
-
-          <button type="submit" class="auth-btn" id="signupBtn">
-            Create Account
-          </button>
-        </form>
-
-        <div class="auth-footer">
-          <p>Already have an account? <a href="#" id="showLoginLink">Login</a></p>
-        </div>
-      </div>
-    </div>
-  `;
-
-  // Handle signup form submission
-  const form = document.getElementById('signupForm');
-  const errorDiv = document.getElementById('signupError');
-  const signupBtn = document.getElementById('signupBtn');
-
-  form.addEventListener('submit', async (e) => {
+  // Handle form submit
+  form.onsubmit = async (e) => {
     e.preventDefault();
 
-    const name = document.getElementById('signupName').value;
-    const email = document.getElementById('signupEmail').value;
-    const password = document.getElementById('signupPassword').value;
-    const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
+    const email = emailInput.value;
+    const password = passwordInput.value;
 
-    // Validate passwords match
-    if (password !== passwordConfirm) {
-      errorDiv.textContent = 'Passwords do not match';
-      errorDiv.style.display = 'block';
-      return;
-    }
-
-    // Disable button and show loading
-    signupBtn.disabled = true;
-    signupBtn.textContent = 'Creating account...';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating account...';
     errorDiv.style.display = 'none';
 
     try {
-      await signup(email, password, name || null);
-
-      // Success! Call the callback
-      if (onSuccess) {
-        onSuccess();
-      }
+      await signup(email, password, null);
+      modal.style.display = 'none';
+      if (onSuccess) onSuccess();
     } catch (error) {
       errorDiv.textContent = error.message || 'Signup failed. Please try again.';
       errorDiv.style.display = 'block';
-      signupBtn.disabled = false;
-      signupBtn.textContent = 'Create Account';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign Up';
     }
-  });
+  };
 
-  // Handle "show login" link
-  document.getElementById('showLoginLink').addEventListener('click', (e) => {
+  // Handle switch to login
+  switchLink.onclick = (e) => {
     e.preventDefault();
-    showLoginPage(onSuccess);
-  });
+    showLoginModal(onSuccess);
+  };
+
+  // Close modal
+  document.getElementById('authModalClose').onclick = () => {
+    modal.style.display = 'none';
+  };
 }

@@ -15,7 +15,7 @@ import { APP } from './app.js';
 
 // Import authentication
 import { isAuthenticated, getUser, clearAuth } from './utils/auth.js';
-import { showLoginPage } from './pages/auth.js';
+import { showLoginModal, showSignupModal } from './pages/auth.js';
 import { logout } from './services/api.js';
 
 // Import feature modules
@@ -334,61 +334,79 @@ function showError(message) {
 }
 
 /**
- * Setup logout button
+ * Setup authentication UI
  */
-function setupLogoutButton() {
-  // Find or create logout button in sidebar
-  const sidebar = document.querySelector('.sidebar');
-  if (!sidebar) return;
+function setupAuthUI() {
+  const authLoggedOut = document.getElementById('authLoggedOut');
+  const authLoggedIn = document.getElementById('authLoggedIn');
+  const userEmail = document.getElementById('userEmail');
+  const mainContent = document.querySelector('.main-content');
+  const loginBtn = document.getElementById('loginBtn');
+  const signupBtn = document.getElementById('signupBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
 
-  // Check if logout button already exists
-  let logoutBtn = document.getElementById('logoutBtn');
-
-  if (!logoutBtn) {
-    // Create logout button
+  if (isAuthenticated()) {
+    // User is logged in - show logged in state
     const user = getUser();
-    const userInfo = document.createElement('div');
-    userInfo.style.cssText = 'padding: 16px; border-top: 1px solid var(--border); margin-top: auto;';
-    userInfo.innerHTML = `
-      <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
-        Logged in as:<br>
-        <strong>${user?.email || 'User'}</strong>
-      </div>
-      <button id="logoutBtn" style="width: 100%; padding: 10px; background: var(--danger); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-        Logout
-      </button>
-    `;
-    sidebar.appendChild(userInfo);
-    logoutBtn = document.getElementById('logoutBtn');
+    if (authLoggedOut) authLoggedOut.style.display = 'none';
+    if (authLoggedIn) authLoggedIn.style.display = 'block';
+    if (userEmail) userEmail.textContent = user?.email || 'User';
+    if (mainContent) mainContent.style.display = 'block';
+  } else {
+    // User is logged out - show logged out state
+    if (authLoggedOut) authLoggedOut.style.display = 'block';
+    if (authLoggedIn) authLoggedIn.style.display = 'none';
+    if (mainContent) mainContent.style.display = 'none';
+
+    // Show login modal automatically
+    showLoginModal(() => {
+      window.location.reload();
+    });
   }
 
-  // Add click handler
-  logoutBtn.addEventListener('click', async () => {
-    if (confirm('Are you sure you want to logout?')) {
-      try {
-        await logout();
+  // Wire up auth buttons
+  if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
+      showLoginModal(() => {
         window.location.reload();
-      } catch (error) {
-        console.error('Logout error:', error);
-        // Clear auth anyway
-        clearAuth();
+      });
+    });
+  }
+
+  if (signupBtn) {
+    signupBtn.addEventListener('click', () => {
+      showSignupModal(() => {
         window.location.reload();
+      });
+    });
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      if (confirm('Are you sure you want to logout?')) {
+        try {
+          await logout();
+          window.location.reload();
+        } catch (error) {
+          console.error('Logout error:', error);
+          // Clear auth anyway
+          clearAuth();
+          window.location.reload();
+        }
       }
-    }
-  });
+    });
+  }
 }
 
 /**
  * Initialize and run the app
  */
 document.addEventListener('DOMContentLoaded', async () => {
-  // Check if user is authenticated
+  // Setup authentication UI (will show login modal if not authenticated)
+  setupAuthUI();
+
+  // Only initialize the app if user is authenticated
   if (!isAuthenticated()) {
-    // Show login page
-    showLoginPage(() => {
-      // After successful login, reload the page to show the app
-      window.location.reload();
-    });
     return;
   }
 
@@ -419,9 +437,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       elements.shoppingList.style.display = 'none';
     }
   }
-
-  // Add logout button functionality
-  setupLogoutButton();
 });
 
 // Make openRecentRecipe global for onclick handler
