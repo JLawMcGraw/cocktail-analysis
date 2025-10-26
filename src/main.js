@@ -9,6 +9,7 @@ import './styles/main.css';
 // Import services
 import { runAnalysis } from './services/analyzer.js';
 import { loadApiKey, loadActiveTab, saveActiveTab } from './services/storage.js';
+import { loadUserData } from './services/dataLoader.js';
 
 // Import app state
 import { APP } from './app.js';
@@ -416,23 +417,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   init();
 
-  // Load user data from API (will be implemented in next step)
-  // For now, continue with localStorage
+  // Load user data from API (with automatic localStorage migration)
+  try {
+    await loadUserData();
 
-  // After auth check, if we have data, run analysis
-  if (APP.editableInventory.length > 0 && APP.recipeData.length > 0) {
-    const results = runAnalysis(APP.editableInventory, APP.recipeData);
-    APP.allResults = results;
-    displayResults(results, elements, getCallbacks());
-    displayShoppingList(results, elements);
-    setupSearch(elements);
+    // After loading data, run analysis if we have both inventory and recipes
+    if (APP.editableInventory.length > 0 && APP.recipeData.length > 0) {
+      const results = runAnalysis(APP.editableInventory, APP.recipeData);
+      APP.allResults = results;
+      displayResults(results, elements, getCallbacks());
+      displayShoppingList(results, elements);
+      setupSearch(elements);
+      displayInventoryManager(elements, getCallbacks());
+      displayFavorites(getCallbacks());
+    } else {
+      // No data yet - show empty states
+      displayInventoryManager(elements, getCallbacks());
+      displayFavorites(getCallbacks());
+      // Hide shopping list when no data
+      if (elements.shoppingList) {
+        elements.shoppingList.style.display = 'none';
+      }
+    }
+  } catch (error) {
+    console.error('Error loading user data:', error);
+    // Show empty states on error
     displayInventoryManager(elements, getCallbacks());
     displayFavorites(getCallbacks());
-  } else {
-    // No data yet - show empty states
-    displayInventoryManager(elements, getCallbacks());
-    displayFavorites(getCallbacks());
-    // Hide shopping list when no data
     if (elements.shoppingList) {
       elements.shoppingList.style.display = 'none';
     }

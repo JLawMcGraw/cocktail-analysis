@@ -4,6 +4,7 @@
  */
 
 import { saveFavorites, saveHistory, saveRecentlyViewed } from '../services/storage.js';
+import { addFavorite, removeFavorite } from '../services/api.js';
 import { getTimeAgo, escapeHtml } from '../utils/formatters.js';
 import { createRecipeCard } from './analysis.js';
 import { APP } from '../app.js';
@@ -11,8 +12,11 @@ import { APP } from '../app.js';
 /**
  * Toggle favorite status
  */
-export function toggleFavorite(recipeName, callbacks) {
-  if (APP.favorites.has(recipeName)) {
+export async function toggleFavorite(recipeName, callbacks) {
+  const isFavorite = APP.favorites.has(recipeName);
+
+  // Update local state first for instant feedback
+  if (isFavorite) {
     APP.favorites.delete(recipeName);
   } else {
     APP.favorites.add(recipeName);
@@ -20,6 +24,29 @@ export function toggleFavorite(recipeName, callbacks) {
   saveFavorites(APP.favorites);
   callbacks.displayFavorites();
   updateFavoriteButton(recipeName);
+
+  // Sync with API in background
+  try {
+    if (isFavorite) {
+      await removeFavorite(recipeName);
+      console.log('✓ Removed from favorites (cloud)');
+    } else {
+      await addFavorite(recipeName);
+      console.log('✓ Added to favorites (cloud)');
+    }
+  } catch (error) {
+    console.error('Failed to sync favorite to API:', error);
+    // Revert local state on error
+    if (isFavorite) {
+      APP.favorites.add(recipeName);
+    } else {
+      APP.favorites.delete(recipeName);
+    }
+    saveFavorites(APP.favorites);
+    callbacks.displayFavorites();
+    updateFavoriteButton(recipeName);
+    alert('Failed to sync favorite. Please try again.');
+  }
 }
 
 /**
