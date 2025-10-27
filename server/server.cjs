@@ -2,8 +2,22 @@ const express = require('express');
 const cors = require('cors');
 const https = require('https');
 const helmet = require('helmet');
-const { HttpsProxyAgent } = require('https-proxy-agent');
 require('dotenv').config();
+
+// Configure global proxy support (must be before any HTTP requests)
+const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy;
+if (proxyUrl) {
+  console.log('🌐 Configuring global proxy:', proxyUrl.split('@')[1] || proxyUrl.split('://')[1]);
+
+  // Use global-agent to automatically proxy all HTTP/HTTPS requests
+  const { bootstrap } = require('global-agent');
+  bootstrap();
+
+  // The GLOBAL_AGENT_HTTPS_PROXY env var is what global-agent looks for
+  if (!process.env.GLOBAL_AGENT_HTTPS_PROXY) {
+    process.env.GLOBAL_AGENT_HTTPS_PROXY = proxyUrl;
+  }
+}
 
 // Debug: Check if .env loaded
 console.log('🔍 .env file check on startup:');
@@ -64,8 +78,7 @@ app.post('/api/messages', (req, res) => {
 
   console.log('🤖 AI Proxy: Forwarding request to Anthropic API...');
 
-  // Use proxy if environment variable is set
-  const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy;
+  // global-agent automatically handles proxy for all requests
   const options = {
     hostname: 'api.anthropic.com',
     port: 443,
@@ -77,12 +90,6 @@ app.post('/api/messages', (req, res) => {
       'anthropic-version': '2023-06-01',
     },
   };
-
-  // Add proxy agent if proxy is configured
-  if (proxyUrl) {
-    console.log('🌐 Using proxy:', proxyUrl.split('@')[1] || proxyUrl.split('://')[1]);
-    options.agent = new HttpsProxyAgent(proxyUrl);
-  }
 
   let responseData = '';
 
