@@ -9,14 +9,21 @@ const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy;
 if (proxyUrl) {
   console.log('🌐 Configuring global proxy:', proxyUrl.split('@')[1] || proxyUrl.split('://')[1]);
 
+  // Enable global-agent debug logging
+  process.env.GLOBAL_AGENT_LOG_LEVEL = 'debug';
+
   // Use global-agent to automatically proxy all HTTP/HTTPS requests
   const { bootstrap } = require('global-agent');
-  bootstrap();
 
   // The GLOBAL_AGENT_HTTPS_PROXY env var is what global-agent looks for
   if (!process.env.GLOBAL_AGENT_HTTPS_PROXY) {
     process.env.GLOBAL_AGENT_HTTPS_PROXY = proxyUrl;
   }
+
+  bootstrap();
+
+  console.log('🌐 Global agent bootstrapped');
+  console.log('🌐 GLOBAL_AGENT_HTTPS_PROXY:', process.env.GLOBAL_AGENT_HTTPS_PROXY);
 }
 
 // Debug: Check if .env loaded
