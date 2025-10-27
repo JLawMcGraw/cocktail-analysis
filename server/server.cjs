@@ -1,29 +1,31 @@
+require('dotenv').config();
+
+// Configure global proxy support BEFORE importing anything else
+const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy;
+if (proxyUrl) {
+  console.log('🌐 Setting up proxy BEFORE any HTTP imports:', proxyUrl.split('@')[1] || proxyUrl.split('://')[1]);
+
+  // Set environment variables BEFORE bootstrapping
+  process.env.GLOBAL_AGENT_HTTPS_PROXY = proxyUrl;
+  process.env.GLOBAL_AGENT_HTTP_PROXY = proxyUrl;
+
+  // Enable debug logging
+  process.env.ROARR_LOG = 'true';
+
+  console.log('🌐 Proxy env vars set, bootstrapping global-agent...');
+}
+
 const express = require('express');
 const cors = require('cors');
 const https = require('https');
 const helmet = require('helmet');
-require('dotenv').config();
 
-// Configure global proxy support (must be before any HTTP requests)
-const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy;
+// Bootstrap global-agent AFTER setting env vars but BEFORE any requests
 if (proxyUrl) {
-  console.log('🌐 Configuring global proxy:', proxyUrl.split('@')[1] || proxyUrl.split('://')[1]);
-
-  // Enable global-agent debug logging
-  process.env.GLOBAL_AGENT_LOG_LEVEL = 'debug';
-
-  // Use global-agent to automatically proxy all HTTP/HTTPS requests
   const { bootstrap } = require('global-agent');
-
-  // The GLOBAL_AGENT_HTTPS_PROXY env var is what global-agent looks for
-  if (!process.env.GLOBAL_AGENT_HTTPS_PROXY) {
-    process.env.GLOBAL_AGENT_HTTPS_PROXY = proxyUrl;
-  }
-
   bootstrap();
-
-  console.log('🌐 Global agent bootstrapped');
-  console.log('🌐 GLOBAL_AGENT_HTTPS_PROXY:', process.env.GLOBAL_AGENT_HTTPS_PROXY);
+  console.log('✅ Global agent bootstrapped successfully');
+  console.log('🌐 All HTTPS requests will now use proxy:', proxyUrl.split('@')[1] || proxyUrl.split('://')[1]);
 }
 
 // Debug: Check if .env loaded

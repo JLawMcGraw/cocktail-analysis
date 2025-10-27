@@ -43,6 +43,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "papaparse": "^5.4.1",
+    "roarr": "^7.21.2",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
