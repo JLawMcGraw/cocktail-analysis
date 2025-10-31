@@ -1,39 +1,16 @@
 require('dotenv').config();
 
-// Configure global proxy support BEFORE importing anything else
-const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy;
-if (proxyUrl) {
-  console.log('🌐 Setting up proxy BEFORE any HTTP imports:', proxyUrl.split('@')[1] || proxyUrl.split('://')[1]);
-
-  // Set environment variables BEFORE bootstrapping
-  process.env.GLOBAL_AGENT_HTTPS_PROXY = proxyUrl;
-  process.env.GLOBAL_AGENT_HTTP_PROXY = proxyUrl;
-
-  // Enable debug logging
-  process.env.ROARR_LOG = 'true';
-
-  console.log('🌐 Proxy env vars set, bootstrapping global-agent...');
-}
-
 const express = require('express');
 const cors = require('cors');
 const https = require('https');
 const helmet = require('helmet');
 
-// Bootstrap global-agent AFTER setting env vars but BEFORE any requests
-if (proxyUrl) {
-  const { bootstrap } = require('global-agent');
-  bootstrap();
-  console.log('✅ Global agent bootstrapped successfully');
-  console.log('🌐 All HTTPS requests will now use proxy:', proxyUrl.split('@')[1] || proxyUrl.split('://')[1]);
-}
-
-// Debug: Check if .env loaded
-console.log('🔍 .env file check on startup:');
-console.log('  PORT:', process.env.PORT);
+// Debug: Check environment configuration on startup
+console.log('🔍 Environment check:');
+console.log('  NODE_ENV:', process.env.NODE_ENV || 'development');
+console.log('  PORT:', process.env.PORT || 3000);
 console.log('  ANTHROPIC_API_KEY exists?', !!process.env.ANTHROPIC_API_KEY);
-console.log('  ANTHROPIC_API_KEY length:', process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0);
-console.log('  HTTPS_PROXY:', process.env.HTTPS_PROXY || process.env.https_proxy || 'none');
+console.log('  ANTHROPIC_API_KEY valid format?', process.env.ANTHROPIC_API_KEY?.startsWith('sk-ant-') || false);
 
 const { initializeDatabase } = require('./database/db.cjs');
 const authRoutes = require('./routes/auth.cjs');
