@@ -163,9 +163,13 @@ export function displayShoppingList(results, elements) {
     '<div style="margin-bottom: 20px; opacity: 0.95;">Top ingredients to unlock more recipes:</div>';
 
   shoppingListData.slice(0, 15).forEach((item) => {
+    // item format: [ingredient_name, {count, recipes}]
+    const ingredientName = item[0];
+    const recipeCount = item[1].recipes.length;
+
     html += '<div class="shopping-item">';
-    html += `<div class="shopping-item-name">${escapeHtml(item.ingredient.charAt(0).toUpperCase() + item.ingredient.slice(1))}</div>`;
-    html += `<div class="shopping-item-impact">+${item.unlocks} recipe${item.unlocks > 1 ? 's' : ''}</div>`;
+    html += `<div class="shopping-item-name">${escapeHtml(ingredientName.charAt(0).toUpperCase() + ingredientName.slice(1))}</div>`;
+    html += `<div class="shopping-item-impact">+${recipeCount} recipe${recipeCount > 1 ? 's' : ''}</div>`;
     html += '</div>';
   });
 
