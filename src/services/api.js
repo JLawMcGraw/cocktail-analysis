@@ -5,7 +5,12 @@
 
 import { getAuthHeader, saveToken, saveUser, clearAuth } from '../utils/auth.js';
 
-const API_BASE_URL = 'http://localhost:3000';
+// Use environment variable in production, localhost in development
+const API_BASE_URL = import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? '' : 'http://localhost:3000');
+
+// In production, API is served from same origin (Railway serves both frontend and backend)
+// In development, use localhost:3000
 
 /**
  * Base fetch wrapper with error handling
