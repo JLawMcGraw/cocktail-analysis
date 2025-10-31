@@ -12,6 +12,8 @@
     "server:direct": "node server/server.cjs",
     "proxy": "node server/proxy-server.js",
     "dev:all": "concurrently \"npm run dev\" \"node server/server.cjs\"",
+    "start": "node server/server.cjs",
+    "railway:build": "npm install && npm run build",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "lint": "eslint src/",

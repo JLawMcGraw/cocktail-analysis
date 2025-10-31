@@ -172,6 +172,21 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
+// Serve static files in production (after API routes)
+if (process.env.NODE_ENV === 'production') {
+  const path = require('path');
+
+  // Serve built frontend files
+  app.use(express.static(path.join(__dirname, '../dist')));
+
+  // Serve index.html for all non-API routes (SPA routing)
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+  });
+
+  console.log('📦 Serving static files from /dist');
+}
+
 // Error handling
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
