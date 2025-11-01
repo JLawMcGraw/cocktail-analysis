@@ -29,8 +29,8 @@ export async function queryClaudeAPI(prompt, conversationHistory, context) {
   ];
 
   const requestBody = {
-    model: 'claude-3-haiku-20240307',
-    max_tokens: 2048,
+    model: 'claude-3-5-sonnet-20241022', // Upgraded from Haiku for better accuracy
+    max_tokens: 4096, // Increased for more detailed responses
     system: systemPrompt,
     messages: messages,
   };
@@ -121,7 +121,35 @@ ${inventory
   .join('\n')}
 
 **Available Recipes (${recipes.length} cocktails):**
-${recipes.map((r) => `- ${r.name} (${r.compatibility}% match)`).join('\n')}
+${recipes.map((r) => {
+    let recipeDetails = `- **${r.name}** (${r.compatibility}% match)`;
+
+    // Add ingredients
+    if (r.ingredients) {
+      recipeDetails += `\n  Ingredients:\n`;
+      const ingredients = r.ingredients.split('\n').filter(i => i.trim());
+      ingredients.forEach(ing => {
+        recipeDetails += `    • ${ing.trim()}\n`;
+      });
+    }
+
+    // Add instructions if available
+    if (r.instructions) {
+      recipeDetails += `  Instructions: ${r.instructions}\n`;
+    }
+
+    // Add glass type if available
+    if (r.glass) {
+      recipeDetails += `  Glass: ${r.glass}\n`;
+    }
+
+    // Add missing ingredients if not a perfect match
+    if (r.missing && r.missing.length > 0) {
+      recipeDetails += `  Missing: ${r.missing.join(', ')}\n`;
+    }
+
+    return recipeDetails;
+  }).join('\n')}
 
 ${
   favorites.length > 0
@@ -149,17 +177,21 @@ ${Object.entries(history)
 }
 
 INSTRUCTIONS:
+- CRITICAL: ONLY recommend cocktails from the "Available Recipes" list above. DO NOT make up or suggest cocktails not in their collection.
+- ALWAYS cite the EXACT ingredients listed in each recipe - never invent or assume ingredients.
 - Give personalized recommendations based on the user's specific inventory
 - Reference specific bottles by name when making recommendations
-- Consider tasting notes when suggesting cocktails
+- Consider tasting notes (Nose, Palate, Finish) when suggesting cocktails
+- Prioritize higher compatibility % cocktails (they have more ingredients)
 - If the user has rated or favorited cocktails, use that to guide recommendations
-- Be conversational and explain WHY you recommend each cocktail
+- Be conversational and explain WHY you recommend each cocktail based on their specific bottles
+- When describing a cocktail, mention the actual ingredients from the recipe, not what you think should be in it
 - Format your response clearly and engagingly
 
 At the end of your response, if you're recommending specific cocktails from their available recipes, list them in this exact format:
 RECOMMENDATIONS: Cocktail Name 1, Cocktail Name 2, Cocktail Name 3
 
-Only list cocktails that are in the user's recipe collection.`;
+IMPORTANT: Only recommend cocktails that appear in the Available Recipes list above. Use the exact recipe names and ingredients provided.`;
 
   return prompt;
 }
