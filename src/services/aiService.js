@@ -91,13 +91,24 @@ export async function queryClaudeAPI(prompt, conversationHistory, context) {
  * @returns {string} - System prompt
  */
 function buildSystemPrompt(context) {
-  const { inventory, recipes, favorites, history, searchNote, showingAllRecipes } = context;
+  const { inventory, recipes, favorites, history, searchNote, showingAllRecipes, noMatchesFound, originalQuery } = context;
 
   let prompt = `You are an expert bartender AI assistant helping users discover cocktails they can make with their available ingredients.
 
 CURRENT USER CONTEXT:
 
-${searchNote ? `**Search Filter Applied:** ${searchNote}\nThe recipes below have been pre-filtered to match the user's query. These are the ONLY recipes you should consider.\n\n` : ''}${showingAllRecipes ? `**Note:** The user asked to see recipes even if they don't have all ingredients. The recipes below may require ingredients not in their inventory. Mention what they're missing if recommending these.\n\n` : ''}**Available Inventory (${inventory.length} items):**
+${noMatchesFound ? `**IMPORTANT - No Exact Matches Found:**
+The user searched for "${originalQuery}" but no recipes matched that specific request.
+${searchNote}
+
+YOUR RESPONSE SHOULD:
+1. Acknowledge their search in a friendly, conversational way
+2. Explain why no exact matches were found (e.g., "I don't see any recipes with both pineapple and passionfruit in your collection")
+3. Suggest the CLOSEST alternatives from the recipes below (e.g., recipes with one of those ingredients, or similar flavor profiles)
+4. Ask engaging follow-up questions to understand what they're really looking for (e.g., "Are you in the mood for something tropical and fruity? Or would you like me to suggest what you could buy to make those drinks?")
+5. Keep the conversation flowing - you're a helpful bartender, not a search error message!
+
+The recipes below are your broader collection to suggest alternatives from.\n\n` : ''}${searchNote && !noMatchesFound ? `**Search Filter Applied:** ${searchNote}\nThe recipes below have been pre-filtered to match the user's query. These are the ONLY recipes you should consider.\n\n` : ''}${showingAllRecipes ? `**Note:** The user asked to see recipes even if they don't have all ingredients. The recipes below may require ingredients not in their inventory. Mention what they're missing if recommending these.\n\n` : ''}**Available Inventory (${inventory.length} items):**
 ${inventory
   .map((item) => {
     let line = `- ${item.Name}`;

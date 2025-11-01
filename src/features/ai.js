@@ -130,26 +130,35 @@ export async function handleAIQuery(elements, callbacks) {
     // Pre-filter recipes based on query
     const { filtered, note } = filterRecipesByIngredients(query, allRecipes);
 
-    // If no recipes match specific ingredients, inform the AI
+    // If no specific matches, still send broader context to AI for helpful suggestions
+    let recipesToSend = filtered;
+    let noMatchesFound = false;
+
     if (filtered.length === 0 && note) {
-      const searchScope = wantsAllRecipes ? 'all recipes in your collection' : 'recipes you can make';
-      elements.aiSearchResponse.innerHTML = `
-        <div style="background: #fff3cd; padding: 20px; border-radius: 10px; color: #856404; line-height: 1.6;">
-          <div style="font-weight: bold; margin-bottom: 10px;">🔍 Search Result:</div>
-          <div>${escapeHtml(note)} (searched ${searchScope})</div>
-        </div>
-      `;
-      elements.aiQueryBtn.disabled = false;
-      return;
+      // No matches - send a broader set of recipes so AI can suggest alternatives
+      noMatchesFound = true;
+      recipesToSend = wantsAllRecipes && APP.recipeData
+        ? APP.recipeData.slice(0, 30).map(r => ({
+            name: r['Drink Name'] || r.name,
+            ingredients: r.Ingredients || r.ingredients,
+            instructions: r.Instructions || r.instructions,
+            glass: r.Glass || r.glass,
+            category: r.Category || r.category,
+            compatibility: 0,
+            missing: [],
+          }))
+        : allRecipes.slice(0, 30);
     }
 
     const context = {
       inventory: APP.editableInventory,
-      recipes: filtered, // Send only filtered recipes
+      recipes: recipesToSend,
       favorites: Array.from(APP.favorites),
       history: APP.history,
-      searchNote: note, // Include filter note for AI awareness
-      showingAllRecipes: wantsAllRecipes, // Tell AI if we're showing recipes they might not be able to make
+      searchNote: note,
+      noMatchesFound: noMatchesFound, // Tell AI the search found nothing
+      originalQuery: query, // Give AI the original query for context
+      showingAllRecipes: wantsAllRecipes,
     };
 
     const result = await queryClaudeAPI(query, APP.conversationHistory, context);
