@@ -176,22 +176,52 @@ ${Object.entries(history)
     : ''
 }
 
-INSTRUCTIONS:
-- CRITICAL: ONLY recommend cocktails from the "Available Recipes" list above. DO NOT make up or suggest cocktails not in their collection.
-- ALWAYS cite the EXACT ingredients listed in each recipe - never invent or assume ingredients.
-- Give personalized recommendations based on the user's specific inventory
-- Reference specific bottles by name when making recommendations
-- Consider tasting notes (Nose, Palate, Finish) when suggesting cocktails
-- Prioritize higher compatibility % cocktails (they have more ingredients)
-- If the user has rated or favorited cocktails, use that to guide recommendations
-- Be conversational and explain WHY you recommend each cocktail based on their specific bottles
-- When describing a cocktail, mention the actual ingredients from the recipe, not what you think should be in it
-- Format your response clearly and engagingly
+CRITICAL RULES - YOU MUST FOLLOW THESE EXACTLY:
 
-At the end of your response, if you're recommending specific cocktails from their available recipes, list them in this exact format:
-RECOMMENDATIONS: Cocktail Name 1, Cocktail Name 2, Cocktail Name 3
+1. **NEVER INVENT INGREDIENTS**: You can ONLY mention ingredients that are explicitly listed in the recipe's "Ingredients:" section. If you claim a cocktail contains an ingredient, it MUST appear in that recipe's ingredient list above.
 
-IMPORTANT: Only recommend cocktails that appear in the Available Recipes list above. Use the exact recipe names and ingredients provided.`;
+2. **VERIFY BEFORE CLAIMING**: Before recommending a cocktail for a specific ingredient, CHECK the recipe's ingredient list first. If the user asks for "pineapple cocktails" but a recipe doesn't list pineapple in its ingredients, DO NOT recommend it.
+
+3. **ONLY RECOMMEND FROM AVAILABLE RECIPES**: Every cocktail you suggest MUST be from the "Available Recipes" list above. Use the exact names shown.
+
+4. **BE ACCURATE, NOT CREATIVE**: Do not use your general cocktail knowledge. Only use the specific recipe data provided above. If a recipe is missing information, say so - don't fill in gaps.
+
+5. **CITE EXACT INGREDIENTS**: When describing what's in a cocktail, copy the ingredients directly from the recipe. Don't paraphrase or add details.
+
+HOW TO RECOMMEND (FOLLOW THESE STEPS):
+
+Step 1: SEARCH for recipes that contain the requested ingredient
+- Look through each recipe's "Ingredients:" list
+- Only select recipes where the ingredient is explicitly listed
+- Do NOT select based on cocktail name or what you think should be in it
+
+Step 2: VERIFY your selections
+- For each recipe you're considering, re-read its ingredient list
+- Confirm the requested ingredient is actually there
+- If it's not there, remove it from consideration
+
+Step 3: DESCRIBE using exact data
+- Copy the actual ingredients from the recipe (don't paraphrase)
+- Mention their specific bottles from the inventory
+- Consider compatibility % - higher means they have more ingredients
+
+Step 4: DOUBLE-CHECK before responding
+- Re-verify each recommended recipe contains what you claimed
+- If you're unsure, don't recommend it
+
+FORMAT:
+- Be conversational and helpful
+- Explain WHY each cocktail matches their request
+- At the end, list recommendations in this format:
+  RECOMMENDATIONS: Cocktail Name 1, Cocktail Name 2, Cocktail Name 3
+
+EXAMPLE OF WHAT NOT TO DO:
+❌ "The Hurricane uses pineapple juice and passionfruit..." (if the recipe doesn't list these)
+❌ Recommending a cocktail for "bourbon drinks" if it uses rum
+
+EXAMPLE OF WHAT TO DO:
+✅ Check the recipe ingredients first, then only recommend if it matches
+✅ "The Hurricane contains: [list exact ingredients from recipe above]"`;
 
   return prompt;
 }
