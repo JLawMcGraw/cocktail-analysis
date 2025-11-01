@@ -91,13 +91,13 @@ export async function queryClaudeAPI(prompt, conversationHistory, context) {
  * @returns {string} - System prompt
  */
 function buildSystemPrompt(context) {
-  const { inventory, recipes, favorites, history, searchNote } = context;
+  const { inventory, recipes, favorites, history, searchNote, showingAllRecipes } = context;
 
   let prompt = `You are an expert bartender AI assistant helping users discover cocktails they can make with their available ingredients.
 
 CURRENT USER CONTEXT:
 
-${searchNote ? `**Search Filter Applied:** ${searchNote}\nThe recipes below have been pre-filtered to match the user's query. These are the ONLY recipes you should consider.\n\n` : ''}**Available Inventory (${inventory.length} items):**
+${searchNote ? `**Search Filter Applied:** ${searchNote}\nThe recipes below have been pre-filtered to match the user's query. These are the ONLY recipes you should consider.\n\n` : ''}${showingAllRecipes ? `**Note:** The user asked to see recipes even if they don't have all ingredients. The recipes below may require ingredients not in their inventory. Mention what they're missing if recommending these.\n\n` : ''}**Available Inventory (${inventory.length} items):**
 ${inventory
   .map((item) => {
     let line = `- ${item.Name}`;

@@ -103,21 +103,40 @@ export async function handleAIQuery(elements, callbacks) {
   elements.aiQueryInput.value = '';
 
   try {
-    // Build context
-    const allRecipes = APP.allResults.perfect.concat(
-      APP.allResults.veryGood,
-      APP.allResults.good,
-    );
+    // Check if user wants to see ALL recipes (not just makeable ones)
+    const wantsAllRecipes = /even if|don't have|missing|incomplete|any recipe|all recipe/i.test(query);
+
+    // Build context - use ALL recipes if requested, otherwise just compatible ones
+    let allRecipes;
+    if (wantsAllRecipes && APP.recipeData) {
+      // Search through ALL recipes in the database
+      allRecipes = APP.recipeData.map(r => ({
+        name: r['Drink Name'] || r.name,
+        ingredients: r.Ingredients || r.ingredients,
+        instructions: r.Instructions || r.instructions,
+        glass: r.Glass || r.glass,
+        category: r.Category || r.category,
+        compatibility: 0, // Unknown compatibility
+        missing: [], // Don't know what's missing
+      }));
+    } else {
+      // Use only compatible recipes
+      allRecipes = APP.allResults.perfect.concat(
+        APP.allResults.veryGood,
+        APP.allResults.good,
+      );
+    }
 
     // Pre-filter recipes based on query
     const { filtered, note } = filterRecipesByIngredients(query, allRecipes);
 
     // If no recipes match specific ingredients, inform the AI
     if (filtered.length === 0 && note) {
+      const searchScope = wantsAllRecipes ? 'all recipes in your collection' : 'recipes you can make';
       elements.aiSearchResponse.innerHTML = `
         <div style="background: #fff3cd; padding: 20px; border-radius: 10px; color: #856404; line-height: 1.6;">
           <div style="font-weight: bold; margin-bottom: 10px;">🔍 Search Result:</div>
-          <div>${escapeHtml(note)}</div>
+          <div>${escapeHtml(note)} (searched ${searchScope})</div>
         </div>
       `;
       elements.aiQueryBtn.disabled = false;
@@ -130,6 +149,7 @@ export async function handleAIQuery(elements, callbacks) {
       favorites: Array.from(APP.favorites),
       history: APP.history,
       searchNote: note, // Include filter note for AI awareness
+      showingAllRecipes: wantsAllRecipes, // Tell AI if we're showing recipes they might not be able to make
     };
 
     const result = await queryClaudeAPI(query, APP.conversationHistory, context);
