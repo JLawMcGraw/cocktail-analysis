@@ -2,7 +2,6 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const https = require('https');
 const helmet = require('helmet');
 
 // Debug: Check environment configuration on startup
@@ -43,8 +42,8 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/recipes', recipesRoutes);
 app.use('/api/favorites', favoritesRoutes);
 
-// Anthropic API Proxy
-app.post('/api/messages', (req, res) => {
+// Anthropic API Proxy - using fetch for better compatibility
+app.post('/api/messages', async (req, res) => {
   // Use server-side API key from environment
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
@@ -54,94 +53,49 @@ app.post('/api/messages', (req, res) => {
 
   if (!apiKey || apiKey === 'your-anthropic-api-key-here') {
     console.error('❌ AI Proxy: No API key configured on server');
-    res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
+    return res.status(500).json({
       error: 'AI feature not configured',
-      message: 'Server administrator needs to add ANTHROPIC_API_KEY to .env file. See .env.example for details.'
-    }));
-    return;
+      message: 'Server administrator needs to add ANTHROPIC_API_KEY to .env file.'
+    });
   }
 
-  console.log('🤖 AI Proxy: Forwarding request to Anthropic API...');
+  try {
+    console.log('🤖 AI Proxy: Forwarding request to Anthropic API...');
+    console.log('📤 Request body:', JSON.stringify(req.body).substring(0, 200) + '...');
 
-  // global-agent automatically handles proxy for all requests
-  const options = {
-    hostname: 'api.anthropic.com',
-    port: 443,
-    path: '/v1/messages',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-  };
-
-  let responseData = '';
-
-  const proxyReq = https.request(options, (proxyRes) => {
-    console.log(`   Response status: ${proxyRes.statusCode}`);
-    console.log(`   Response headers:`, proxyRes.headers);
-
-    res.writeHead(proxyRes.statusCode, {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify(req.body),
     });
 
-    proxyRes.on('data', (chunk) => {
-      responseData += chunk.toString();
-      res.write(chunk);
-    });
+    console.log('   Response status:', response.status);
 
-    proxyRes.on('end', () => {
-      if (proxyRes.statusCode !== 200) {
-        console.error('❌ AI Proxy Error:', {
-          status: proxyRes.statusCode,
-          response: responseData
-        });
-      } else {
-        console.log('✅ AI Proxy: Request successful');
-      }
-      res.end();
-    });
-  });
+    const data = await response.json();
 
-  proxyReq.on('error', (error) => {
+    if (!response.ok) {
+      console.error('❌ AI Proxy Error:', {
+        status: response.status,
+        error: data
+      });
+      return res.status(response.status).json(data);
+    }
+
+    console.log('✅ AI Proxy: Request successful');
+    res.json(data);
+  } catch (error) {
     console.error('❌ AI Proxy network error:', error.message);
     console.error('❌ Full error:', error);
-    console.error('❌ Error code:', error.code);
-    res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
+    res.status(500).json({
       error: 'Failed to connect to Anthropic API',
       details: error.message,
-      code: error.code,
-      tip: 'Check your internet connection and API key validity. If key starts with sk-ant-api03, it should be valid format.'
-    }));
-  });
-
-  let body = '';
-  req.on('data', (chunk) => {
-    body += chunk.toString();
-  });
-
-  req.on('end', () => {
-    try {
-      // Validate JSON before sending
-      const parsedBody = JSON.parse(body);
-      console.log('📤 Sending to Anthropic:');
-      console.log('   Model:', parsedBody.model);
-      console.log('   Max tokens:', parsedBody.max_tokens);
-      console.log('   Messages count:', parsedBody.messages?.length);
-      console.log('   Body size:', body.length, 'bytes');
-
-      proxyReq.write(body);
-      proxyReq.end();
-    } catch (error) {
-      console.error('❌ AI Proxy: Invalid JSON in request body');
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Invalid request format' }));
-    }
-  });
+      tip: 'Check server internet connection and API key validity.'
+    });
+  }
 });
 
 // Health check
