@@ -11,6 +11,72 @@ import { createRecipeCard } from './analysis.js';
 import { APP } from '../app.js';
 
 /**
+ * Filter recipes based on user query for specific ingredients
+ * Returns {filtered: Recipe[], note: string}
+ */
+function filterRecipesByIngredients(query, allRecipes) {
+  // Common ingredient keywords to search for
+  const ingredientKeywords = [
+    'pineapple', 'lime', 'lemon', 'orange', 'grapefruit', 'passionfruit', 'passion fruit',
+    'mango', 'coconut', 'banana', 'strawberry', 'raspberry', 'blackberry',
+    'mint', 'basil', 'thyme', 'rosemary', 'cucumber',
+    'ginger', 'vanilla', 'cinnamon', 'nutmeg',
+    'rum', 'bourbon', 'whiskey', 'gin', 'vodka', 'tequila', 'mezcal', 'cognac', 'brandy',
+    'vermouth', 'campari', 'aperol', 'chartreuse', 'bitters',
+    'syrup', 'honey', 'agave', 'sugar', 'grenadine', 'orgeat', 'falernum'
+  ];
+
+  const queryLower = query.toLowerCase();
+
+  // Extract ingredient mentions from query
+  const mentionedIngredients = ingredientKeywords.filter(keyword =>
+    queryLower.includes(keyword)
+  );
+
+  // If no specific ingredients mentioned, return all recipes
+  if (mentionedIngredients.length === 0) {
+    return { filtered: allRecipes.slice(0, 30), note: null };
+  }
+
+  // Filter recipes that contain ALL mentioned ingredients
+  const filtered = allRecipes.filter(recipe => {
+    const ingredientsText = (recipe.ingredients || recipe.Ingredients || '').toLowerCase();
+
+    // Check if ALL mentioned ingredients appear in this recipe
+    return mentionedIngredients.every(ingredient =>
+      ingredientsText.includes(ingredient)
+    );
+  });
+
+  // If we found matches, return them
+  if (filtered.length > 0) {
+    return {
+      filtered: filtered.slice(0, 20),
+      note: `Found ${filtered.length} recipe(s) containing: ${mentionedIngredients.join(', ')}`
+    };
+  }
+
+  // Try partial matches (at least one ingredient)
+  const partialFiltered = allRecipes.filter(recipe => {
+    const ingredientsText = (recipe.ingredients || recipe.Ingredients || '').toLowerCase();
+    return mentionedIngredients.some(ingredient => ingredientsText.includes(ingredient));
+  });
+
+  if (partialFiltered.length > 0) {
+    return {
+      filtered: partialFiltered.slice(0, 20),
+      note: `No recipes contain ALL ingredients. Showing ${partialFiltered.length} recipe(s) with at least one: ${mentionedIngredients.join(', ')}`
+    };
+  }
+
+  // No matches found
+  return {
+    filtered: [],
+    note: `No recipes found containing: ${mentionedIngredients.join(', ')}. Try a different search or ask a general question.`
+  };
+}
+
+/**
  * Handle AI query
  * API key is handled server-side
  */
@@ -43,11 +109,27 @@ export async function handleAIQuery(elements, callbacks) {
       APP.allResults.good,
     );
 
+    // Pre-filter recipes based on query
+    const { filtered, note } = filterRecipesByIngredients(query, allRecipes);
+
+    // If no recipes match specific ingredients, inform the AI
+    if (filtered.length === 0 && note) {
+      elements.aiSearchResponse.innerHTML = `
+        <div style="background: #fff3cd; padding: 20px; border-radius: 10px; color: #856404; line-height: 1.6;">
+          <div style="font-weight: bold; margin-bottom: 10px;">🔍 Search Result:</div>
+          <div>${escapeHtml(note)}</div>
+        </div>
+      `;
+      elements.aiQueryBtn.disabled = false;
+      return;
+    }
+
     const context = {
       inventory: APP.editableInventory,
-      recipes: allRecipes.slice(0, 30),
+      recipes: filtered, // Send only filtered recipes
       favorites: Array.from(APP.favorites),
       history: APP.history,
+      searchNote: note, // Include filter note for AI awareness
     };
 
     const result = await queryClaudeAPI(query, APP.conversationHistory, context);
