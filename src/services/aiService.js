@@ -29,7 +29,7 @@ export async function queryClaudeAPI(prompt, conversationHistory, context) {
   ];
 
   const requestBody = {
-    model: 'claude-3-sonnet-20240229', // Claude 3 Sonnet - reliable and accurate
+    model: 'claude-sonnet-4-5-20250929', // Claude Sonnet 4.5 - latest and smartest model
     max_tokens: 4096, // Increased for more detailed responses
     system: systemPrompt,
     messages: messages,
