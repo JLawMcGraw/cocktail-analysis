@@ -19,6 +19,7 @@ const authRoutes = require('./routes/auth.cjs');
 const inventoryRoutes = require('./routes/inventory.cjs');
 const recipesRoutes = require('./routes/recipes.cjs');
 const favoritesRoutes = require('./routes/favorites.cjs');
+const adminRoutes = require('./routes/admin.cjs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -91,6 +92,8 @@ app.use('/auth', authRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/recipes', recipesRoutes);
 app.use('/api/favorites', favoritesRoutes);
+// ⚠️ TEMPORARY ADMIN ROUTES - REMOVE AFTER PASSWORD RESET
+app.use('/api/admin', adminRoutes);
 
 // Anthropic API Proxy - using fetch for better compatibility
 app.post('/api/messages', async (req, res) => {
