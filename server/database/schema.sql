@@ -31,8 +31,10 @@ CREATE TABLE IF NOT EXISTS inventory (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create index for faster user inventory lookups
+-- Create indexes for faster inventory lookups
 CREATE INDEX IF NOT EXISTS idx_inventory_user_id ON inventory(user_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_name ON inventory(name);
+CREATE INDEX IF NOT EXISTS idx_inventory_user_name ON inventory(user_id, name);
 
 -- Recipes (user's recipe collection)
 CREATE TABLE IF NOT EXISTS recipes (
@@ -46,8 +48,10 @@ CREATE TABLE IF NOT EXISTS recipes (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create index for faster user recipe lookups
+-- Create indexes for faster recipe lookups
 CREATE INDEX IF NOT EXISTS idx_recipes_user_id ON recipes(user_id);
+CREATE INDEX IF NOT EXISTS idx_recipes_name ON recipes(name);
+CREATE INDEX IF NOT EXISTS idx_recipes_user_name ON recipes(user_id, name);
 
 -- Favorites
 CREATE TABLE IF NOT EXISTS favorites (
@@ -59,8 +63,10 @@ CREATE TABLE IF NOT EXISTS favorites (
   UNIQUE(user_id, recipe_name)
 );
 
--- Create index for faster user favorites lookups
+-- Create indexes for faster favorites lookups
 CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites(user_id);
+CREATE INDEX IF NOT EXISTS idx_favorites_recipe ON favorites(recipe_name);
+CREATE INDEX IF NOT EXISTS idx_favorites_user_recipe ON favorites(user_id, recipe_name);
 
 -- History (made recipes, ratings, notes)
 CREATE TABLE IF NOT EXISTS recipe_history (
@@ -76,5 +82,7 @@ CREATE TABLE IF NOT EXISTS recipe_history (
   UNIQUE(user_id, recipe_name)
 );
 
--- Create index for faster user history lookups
+-- Create indexes for faster history lookups
 CREATE INDEX IF NOT EXISTS idx_history_user_id ON recipe_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_history_recipe ON recipe_history(recipe_name);
+CREATE INDEX IF NOT EXISTS idx_history_user_recipe ON recipe_history(user_id, recipe_name);

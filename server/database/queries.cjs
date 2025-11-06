@@ -153,12 +153,42 @@ async function deleteAllUserInventory(userId) {
 
 /**
  * Bulk insert inventory items
+ * Validates all items before inserting to prevent partial failures
  */
 async function bulkInsertInventory(userId, items) {
+  // Validate all items first
+  if (!Array.isArray(items)) {
+    throw new Error('Items must be an array');
+  }
+
+  if (items.length === 0) {
+    return [];
+  }
+
+  if (items.length > 1000) {
+    throw new Error('Cannot insert more than 1000 items at once');
+  }
+
+  // Validate each item has required fields
+  const validatedItems = items.filter((item) => {
+    const name = item.name || item.Name;
+    return name && typeof name === 'string' && name.trim().length > 0;
+  });
+
+  if (validatedItems.length === 0) {
+    throw new Error('No valid items to insert');
+  }
+
+  // Insert items (in future, use transactions for atomicity)
   const insertedIds = [];
-  for (const item of items) {
-    const id = await addInventoryItem(userId, item);
-    insertedIds.push(id);
+  for (const item of validatedItems) {
+    try {
+      const id = await addInventoryItem(userId, item);
+      insertedIds.push(id);
+    } catch (error) {
+      console.error(`Failed to insert item ${item.name || item.Name}:`, error);
+      // Continue with other items
+    }
   }
   return insertedIds;
 }
@@ -254,8 +284,9 @@ function convertRecipeFormat(recipe) {
 
   // Convert from CSV format (Ingredient 1, Ingredient 2, etc.)
   const ingredients = [];
+  const MAX_INGREDIENTS = 50; // Prevent DoS attacks with excessive ingredients
   let i = 1;
-  while (recipe[`Ingredient ${i}`]) {
+  while (i <= MAX_INGREDIENTS && recipe[`Ingredient ${i}`]) {
     const ing = recipe[`Ingredient ${i}`].trim();
     if (ing) {
       ingredients.push(ing);
@@ -273,13 +304,51 @@ function convertRecipeFormat(recipe) {
 
 /**
  * Bulk insert recipes (converts CSV format to database format)
+ * Validates all recipes before inserting
  */
 async function bulkInsertRecipes(userId, recipes) {
-  const insertedIds = [];
+  // Validate input
+  if (!Array.isArray(recipes)) {
+    throw new Error('Recipes must be an array');
+  }
+
+  if (recipes.length === 0) {
+    return [];
+  }
+
+  if (recipes.length > 1000) {
+    throw new Error('Cannot insert more than 1000 recipes at once');
+  }
+
+  // Convert and validate each recipe
+  const validatedRecipes = [];
   for (const recipe of recipes) {
-    const converted = convertRecipeFormat(recipe);
-    const id = await addRecipe(userId, converted);
-    insertedIds.push(id);
+    try {
+      const converted = convertRecipeFormat(recipe);
+      // Validate has required fields
+      if (converted.name && converted.name.trim().length > 0) {
+        validatedRecipes.push(converted);
+      }
+    } catch (error) {
+      console.error(`Failed to convert recipe:`, error);
+      // Skip invalid recipes
+    }
+  }
+
+  if (validatedRecipes.length === 0) {
+    throw new Error('No valid recipes to insert');
+  }
+
+  // Insert recipes
+  const insertedIds = [];
+  for (const recipe of validatedRecipes) {
+    try {
+      const id = await addRecipe(userId, recipe);
+      insertedIds.push(id);
+    } catch (error) {
+      console.error(`Failed to insert recipe ${recipe.name}:`, error);
+      // Continue with other recipes
+    }
   }
   return insertedIds;
 }

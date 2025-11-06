@@ -5,10 +5,44 @@
 
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const rateLimit = require('express-rate-limit');
 const { createUser, findUserByEmail, verifyPassword, findUserById } = require('../database/queries.cjs');
 const { generateToken, authMiddleware } = require('../middleware/auth.cjs');
 
 const router = express.Router();
+
+// Rate limiter for authentication endpoints
+// Prevents brute force attacks and credential stuffing
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message: {
+    error: 'Too Many Requests',
+    message: 'Too many authentication attempts. Please try again after 15 minutes.',
+  },
+  standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
+  legacyHeaders: false, // Disable `X-RateLimit-*` headers
+  handler: (req, res) => {
+    console.warn(`⚠️ Rate limit exceeded for IP: ${req.ip} on ${req.path}`);
+    res.status(429).json({
+      error: 'Too Many Requests',
+      message: 'Too many authentication attempts. Please try again after 15 minutes.',
+      retryAfter: '15 minutes',
+    });
+  },
+});
+
+// Stricter rate limiter for failed login attempts
+// More aggressive to prevent password guessing
+const strictAuthLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // 10 attempts per hour
+  skipSuccessfulRequests: true, // Don't count successful logins
+  message: {
+    error: 'Too Many Failed Attempts',
+    message: 'Too many failed login attempts. Please try again after 1 hour.',
+  },
+});
 
 /**
  * POST /auth/signup
@@ -16,9 +50,14 @@ const router = express.Router();
  */
 router.post(
   '/signup',
+  authLimiter, // Apply rate limiting
   [
     body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    body('password')
+      .isLength({ min: 8 })
+      .withMessage('Password must be at least 8 characters')
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+      .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
     body('name').optional().trim(),
   ],
   async (req, res) => {
@@ -75,6 +114,8 @@ router.post(
  */
 router.post(
   '/login',
+  authLimiter, // Apply rate limiting
+  strictAuthLimiter, // Additional strict rate limiting for failed attempts
   [
     body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
     body('password').notEmpty().withMessage('Password is required'),

@@ -1,46 +1,21 @@
-# 🍹 Cocktail Compatibility Analyzer
+# 🍹 Cocktail Analyzer
 
-**Version 6.0.0 - Full-Stack Application with User Authentication**
-
-A modern web application that helps you discover what cocktails you can make with your home bar, powered by AI and intelligent recipe matching.
+**Version 6.0.1** - A modern web app for managing your home bar, discovering cocktails, and getting AI-powered recommendations.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
-[![Version](https://img.shields.io/badge/version-6.0.0-blue.svg)](https://github.com)
+[![Security](https://img.shields.io/badge/security-hardened-green.svg)](./SECURITY_FIXES.md)
 
 ---
 
 ## ✨ Features
 
-### 🔐 User Authentication (NEW in v6.0)
-- **Secure Login**: JWT-based authentication with bcrypt password hashing
-- **Persistent Data**: Your bar stock and recipes saved to the cloud
-- **Multi-Device Sync**: Access your data from anywhere
-- **Auto-Save**: Changes automatically sync every 30 seconds
-
-### 🍸 Smart Recipe Matching
-- **Intelligent Analysis**: Fuzzy matching with ingredient aliases
-- **Compatibility Scoring**: Find perfect matches, near-matches, and possibilities
-- **Shopping Lists**: See what you're missing for "almost there" cocktails
-- **Real-Time Search**: Filter and search your cocktail collection
-
-### 🤖 AI Bartender Assistant
-- **Natural Language**: Ask Claude anything about cocktails
-- **Contextual Help**: Get recommendations based on your inventory
-- **Ingredient Substitutions**: Find alternatives when you're missing something
-- **Cocktail History**: Learn about classic drinks and techniques
-
-### 📊 Inventory Management
-- **Detailed Tracking**: 12-column CSV format with tasting notes
-- **Stock Levels**: Track what's in stock
-- **Spirit Classifications**: Organize by type, region, and style
-- **Export/Import**: Backup your data anytime
-
-### ❤️ Favorites & History
-- **Save Favorites**: Mark your go-to cocktails
-- **Rate & Review**: 5-star ratings and tasting notes
-- **Track Made Drinks**: Remember what you've tried
-- **Recently Viewed**: Quick access to recent recipes
+- 🔐 **Secure Authentication** - JWT-based user accounts with bcrypt encryption
+- 📊 **Inventory Management** - Track your home bar with detailed tasting notes
+- 🍸 **Smart Recipe Matching** - Fuzzy search finds cocktails you can make
+- 🤖 **AI Bartender** - Claude-powered recommendations and substitutions
+- ❤️ **Favorites & History** - Save and rate cocktails
+- 🔄 **Auto-Sync** - Data synchronized across devices
 
 ---
 
@@ -53,54 +28,48 @@ A modern web application that helps you discover what cocktails you can make wit
 ### Installation
 
 ```bash
-# 1. Clone the repository
-git clone <your-repo-url>
-cd cocktail-analysis
-
-# 2. Checkout the main branch
-git checkout claude/implement-user-upload-011CUUSDX8XNRiZrkJWbSkVd
-
-# 3. Install dependencies
+# 1. Install dependencies
 npm install
 
-# 4. Rebuild SQLite bindings
+# 2. Rebuild SQLite bindings (IMPORTANT!)
 npm rebuild better-sqlite3
 
-# 5. Configure environment
+# 3. Configure environment
 cp .env.example .env
-# Edit .env and set JWT_SECRET to a random string
+
+# 4. Generate secure JWT secret
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+# Copy output and paste into .env as JWT_SECRET
+
+# 5. (Optional) Add Anthropic API key for AI features
+# Get key from: https://console.anthropic.com/
+# Add to .env: ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 ### Running the App
 
-**Option 1: Run both frontend and backend together**
+**Development (recommended):**
+```bash
+# Terminal 1 - Backend (port 3000)
+npm run server
+
+# Terminal 2 - Frontend (port 5173)
+npm run dev
+```
+
+**Or run both together:**
 ```bash
 npm run dev:all
 ```
 
-**Option 2: Run separately (recommended for development)**
+Open http://localhost:5173 in your browser.
 
-Terminal 1 - Backend Server:
-```bash
-npm run server
-# Runs on http://localhost:3000
-```
+### First-Time Setup
 
-Terminal 2 - Frontend:
-```bash
-npm run dev
-# Runs on http://localhost:5173 (Vite dev server)
-```
-
-### First Time Setup
-
-1. **Open** `http://localhost:5173` in your browser
-2. **Sign Up** - Click "Sign Up" and create an account
-3. **Upload Data**:
-   - Upload your bar stock CSV (see `sample-bar-stock.csv`)
-   - Upload recipe CSVs (see `sample-recipes.csv`)
-4. **Analyze** - Click "Analyze My Bar" to see what you can make!
-5. **AI** (Optional) - Add your Anthropic API key to use the AI Bartender
+1. Click "Sign Up" and create an account
+2. Upload your bar stock CSV (see `sample-bar-stock.csv`)
+3. Upload recipe CSVs (see `sample-recipes.csv`)
+4. Click "Analyze My Bar" to see what you can make!
 
 ---
 
@@ -108,170 +77,123 @@ npm run dev
 
 ```
 cocktail-analysis/
-├── server/                    # Backend (Node.js + Express)
-│   ├── server.cjs            # Main server file
-│   ├── database.cjs          # SQLite database
-│   ├── auth.cjs              # Authentication utilities
-│   └── routes/               # API endpoints
-│       ├── auth.cjs          # Login/signup
-│       ├── inventory.cjs     # Bar stock CRUD
-│       ├── recipes.cjs       # Recipe CRUD
-│       └── user-data.cjs     # Favorites/history
-├── src/                       # Frontend (ES Modules)
-│   ├── index.html            # Main HTML (240 lines)
-│   ├── main.js               # App orchestration (1,732 lines)
-│   ├── app.js                # Global state
-│   ├── services/             # Business logic
-│   │   ├── authService.js    # Auth client
-│   │   ├── apiService.js     # API communication
-│   │   ├── authIntegration.js # UI integration
-│   │   ├── storage.js        # localStorage
-│   │   ├── analyzer.js       # Recipe matching
-│   │   ├── aiService.js      # Claude API
-│   │   └── csvParser.js      # CSV parsing
-│   ├── utils/                # Helpers
-│   │   ├── formatters.js     # XSS protection, formatting
-│   │   ├── fuzzyMatch.js     # Ingredient matching
-│   │   └── aliases.js        # Ingredient aliases
-│   └── styles/               # CSS modules
-├── public/                    # Static assets
-├── cocktail.db               # SQLite database (auto-created)
-├── .env                      # Environment variables (create from .env.example)
-├── package.json              # Dependencies
-└── vite.config.js            # Vite configuration
+├── server/                  # Backend (Node.js + Express)
+│   ├── server.cjs          # Main server
+│   ├── database/           # SQLite database
+│   ├── middleware/         # Auth, CSRF protection
+│   └── routes/             # API endpoints
+├── src/                    # Frontend (ES Modules)
+│   ├── services/           # API, Auth, AI, Storage
+│   ├── utils/              # Formatters, fuzzy matching
+│   ├── features/           # UI components
+│   └── styles/             # CSS modules
+├── .env                    # Configuration (create from .env.example)
+└── cocktail.db            # SQLite database (auto-created)
 ```
 
 ---
 
-## 🎯 How It Works
+## 🔐 Security
 
-### 1. Upload Your Inventory
+**v6.0.1** includes comprehensive security hardening:
+- ✅ JWT secret validation (fails fast if misconfigured)
+- ✅ Rate limiting on auth endpoints (5 attempts per 15 min)
+- ✅ CSRF protection on all state-changing routes
+- ✅ HTTPS enforcement in production
+- ✅ XSS protection with HTML escaping
+- ✅ SQL injection prevention with prepared statements
+- ✅ Secure password hashing (bcrypt, 10 rounds)
 
-CSV Format (12 columns):
-```csv
-Name,Stock Number,Liquor Type,Detailed Spirit Classification,Distillation Method,ABV (%),Distillery Location,Age Statement or Barrel Finish,Additional Notes,Profile (Nose),Palate,Finish
-Hamilton 86 Demerara Rum,1,Rum,Demerara Rum,Pot Still,86,Guyana,2 Year Old,High ester funky notes,Ripe banana molasses,Rich spicy fruity,Long warming
-```
-
-### 2. Upload Recipes
-
-CSV Format (4 columns):
-```csv
-Drink Name,Ingredients,Instructions,Glass
-Mai Tai,"2 oz Aged Rum
-1 oz Fresh Lime Juice
-0.5 oz Orange Curaçao
-0.25 oz Orgeat
-0.25 oz Simple Syrup","Shake all ingredients with ice. Strain into glass filled with crushed ice. Garnish with mint and lime.","Rocks Glass"
-```
-
-### 3. Analyze Your Bar
-
-The app uses fuzzy matching to find:
-- **Perfect Matches** (100%): You have everything!
-- **Very Good** (80-99%): Missing 1-2 ingredients
-- **Good** (60-79%): Close matches worth considering
-
-### 4. Get Recommendations
-
-Ask the AI Bartender:
-- "What can I make with rum and lime?"
-- "I'm out of orgeat, what can I substitute?"
-- "Recommend something for a summer party"
-- "Tell me about the history of the Old Fashioned"
-
----
-
-## 🔐 Authentication & Security
-
-### User Accounts
-- **Email/Password**: Standard authentication
-- **JWT Tokens**: 7-day expiration
-- **Secure Storage**: Passwords hashed with bcrypt (10 rounds)
-- **Data Isolation**: Each user has their own data
-
-### API Security
-- **Protected Routes**: All data endpoints require authentication
-- **SQL Injection**: Prevented with prepared statements
-- **XSS Protection**: HTML escaping on user input
-- **CORS**: Enabled for local development
-
-### Privacy
-- ✅ Data stored on your server only
-- ✅ Passwords never stored in plaintext
-- ✅ No data sent to third parties (except Anthropic for AI features)
-- ✅ Full control over your data
+See [SECURITY_FIXES.md](./SECURITY_FIXES.md) for details.
 
 ---
 
 ## 📡 API Endpoints
 
 ### Authentication
-- `POST /api/auth/signup` - Create account
-- `POST /api/auth/login` - Login and get JWT
-- `GET /api/auth/me` - Get current user
-- `POST /api/auth/logout` - Logout
+```
+POST   /auth/signup          Create account
+POST   /auth/login           Login
+GET    /auth/me              Get profile (protected)
+POST   /auth/logout          Logout (protected)
+```
 
-### Data Management (Protected)
-- `GET /api/inventory` - Get bar stock
-- `POST /api/inventory` - Save bar stock
-- `GET /api/recipes` - Get recipes
-- `POST /api/recipes` - Save recipes
-- `GET /api/user-data/favorites` - Get favorites
-- `POST /api/user-data/favorites` - Save favorites
-- `GET /api/user-data/history` - Get history
-- `POST /api/user-data/history` - Save history
+### Data (All Protected)
+```
+GET    /api/inventory        Get bar stock
+POST   /api/inventory        Add/update inventory
+GET    /api/recipes          Get recipes
+POST   /api/recipes          Add/update recipes
+GET    /api/favorites        Get favorites
+POST   /api/favorites        Add favorite
+GET    /api/csrf-token       Get CSRF token (for API calls)
+```
 
-### AI Proxy
-- `POST /api/messages` - Anthropic Claude API proxy
-
-See [IMPLEMENTATION.md](./IMPLEMENTATION.md) for full API documentation.
+### AI
+```
+POST   /api/messages         Anthropic Claude proxy
+```
 
 ---
 
 ## 🛠️ Development
 
 ### Build for Production
-
 ```bash
 npm run build
 ```
 
-### Linting
-
+### Code Quality
 ```bash
-npm run lint
-npm run lint:fix
+npm run lint          # Check code
+npm run lint:fix      # Auto-fix issues
+npm run format        # Format with Prettier
 ```
 
-### Code Formatting
-
+### Testing
 ```bash
-npm run format
+npm test              # Run tests with Vitest
+npm run test:ui       # Vitest UI mode
 ```
-
-### Environment Variables
-
-Create `.env` from `.env.example`:
-
-```env
-PORT=3000
-JWT_SECRET=your-super-secret-key-change-this
-DB_PATH=./cocktail.db
-ANTHROPIC_API_KEY=  # Optional
-```
-
-**⚠️ Important:** Change `JWT_SECRET` to a long random string in production!
 
 ---
 
-## 📚 Documentation
+## 📝 Environment Variables
 
-- **[IMPLEMENTATION.md](./IMPLEMENTATION.md)** - Complete implementation guide
-- **[AUTH_FEATURES.md](./AUTH_FEATURES.md)** - Authentication deep dive
-- **[CHANGELOG.md](./CHANGELOG.md)** - Version history
-- **[MIGRATION.md](./MIGRATION.md)** - Migration from v5.0 to v6.0
-- **[GIT_WORKFLOW.md](./GIT_WORKFLOW.md)** - Git workflow guide
+Required in `.env`:
+
+```env
+# Server
+PORT=3000
+NODE_ENV=development
+
+# JWT Secret (REQUIRED - Generate with crypto.randomBytes(32))
+JWT_SECRET=your-64-character-hex-string-here
+
+# Frontend URL (for CORS)
+FRONTEND_URL=http://localhost:5173
+
+# Database
+DATABASE_PATH=./server/database/cocktail-analyzer.db
+
+# Anthropic API (Optional - for AI features)
+ANTHROPIC_API_KEY=sk-ant-api03-...
+```
+
+**⚠️ CRITICAL:** Generate a secure JWT_SECRET:
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+---
+
+## 📊 CSV Format
+
+### Bar Stock (`sample-bar-stock.csv`)
+12 columns: Name, Stock Number, Liquor Type, Detailed Spirit Classification, Distillation Method, ABV (%), Distillery Location, Age Statement, Additional Notes, Profile (Nose), Palate, Finish
+
+### Recipes (`sample-recipes.csv`)
+4 columns: Drink Name, Ingredients, Instructions, Glass
 
 ---
 
@@ -281,25 +203,42 @@ ANTHROPIC_API_KEY=  # Optional
 ```bash
 # Rebuild SQLite bindings
 npm rebuild better-sqlite3
+
+# Check .env file exists and has JWT_SECRET set
+cat .env
 ```
 
 ### Port already in use
 ```bash
-# Change PORT in .env or kill process
+# Windows
+netstat -ano | findstr :3000
+
+# macOS/Linux
 lsof -ti:3000 | xargs kill -9
+
+# Or change PORT in .env
 ```
 
-### Can't login
-1. Check server is running on port 3000
-2. Verify credentials
-3. Check browser console for errors
+### CSRF token errors
+Make sure frontend includes CSRF token in requests:
+```javascript
+// Get token
+const res = await fetch('/api/csrf-token', { credentials: 'include' });
+const { csrfToken } = await res.json();
 
-### Data not syncing
-1. Verify you're logged in (email shows in sidebar)
-2. Check network tab for API errors
-3. Ensure server is running
+// Use in requests
+fetch('/api/inventory', {
+  method: 'POST',
+  headers: {
+    'X-CSRF-Token': csrfToken,
+    'Authorization': `Bearer ${authToken}`
+  },
+  credentials: 'include',
+  body: JSON.stringify(data)
+});
+```
 
-See [IMPLEMENTATION.md](./IMPLEMENTATION.md#troubleshooting) for more help.
+See `server/middleware/README_CSRF.md` for full CSRF implementation guide.
 
 ---
 
@@ -307,51 +246,27 @@ See [IMPLEMENTATION.md](./IMPLEMENTATION.md#troubleshooting) for more help.
 
 **Frontend:**
 - Vanilla JavaScript (ES Modules)
-- Vite (development & build)
-- PapaParse (CSV parsing)
-- Modern CSS (CSS Grid, Flexbox)
+- Vite 5.0.8
+- PapaParse (CSV)
+- Modern CSS
 
 **Backend:**
-- Node.js + Express
-- better-sqlite3 (SQLite database)
-- JWT (authentication)
-- bcrypt (password hashing)
+- Node.js + Express 4.18.2
+- SQLite (better-sqlite3 + sqlite3)
+- JWT + bcrypt
+- Helmet (security headers)
+- express-rate-limit
 
 **External APIs:**
-- Anthropic Claude (AI bartending)
+- Anthropic Claude API
 
 ---
 
-## 📊 Stats
+## 📚 Documentation
 
-- **Frontend**: ~2,000 lines of JavaScript across 15+ modules
-- **Backend**: ~750 lines across server, database, and routes
-- **Documentation**: 6 comprehensive guides
-- **CSV Support**: 12-column inventory format
-- **Database**: 5 tables with indexes
-- **Security**: JWT + bcrypt + prepared statements
-- **Auto-sync**: Every 30 seconds
-
----
-
-## 🗺️ Roadmap
-
-### Completed ✅
-- ✅ Modular architecture (v5.0)
-- ✅ User authentication (v6.0)
-- ✅ Data persistence (v6.0)
-- ✅ Auto-sync functionality (v6.0)
-- ✅ Bug fixes and refinements (v6.0)
-
-### Future Enhancements 🔮
-- 🔄 Password reset functionality
-- 🔄 Email verification
-- 🔄 Social login (Google, GitHub)
-- 🔄 Shared collections
-- 🔄 Public recipe sharing
-- 🔄 Mobile app
-- 🔄 Advanced analytics
-- 🔄 Recipe recommendations
+- **[SECURITY_FIXES.md](./SECURITY_FIXES.md)** - Security hardening details
+- **[CHANGELOG.md](./CHANGELOG.md)** - Version history
+- **[server/middleware/README_CSRF.md](./server/middleware/README_CSRF.md)** - CSRF implementation guide
 
 ---
 
@@ -363,45 +278,35 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 ## 🙏 Acknowledgments
 
-- **Anthropic** for the Claude API
-- **PapaParse** for excellent CSV parsing
-- **better-sqlite3** for fast, reliable SQLite
-- **Vite** for lightning-fast development
+- **Anthropic** - Claude API
+- **PapaParse** - CSV parsing
+- **better-sqlite3** - Fast SQLite
+- **Vite** - Build tool
 
 ---
 
-## 📬 Support
-
-For issues, questions, or feature requests:
-1. Check the [documentation](./IMPLEMENTATION.md)
-2. Review [troubleshooting guide](./IMPLEMENTATION.md#troubleshooting)
-3. Open an issue on GitHub
-
----
-
-## 🎉 Quick Commands Reference
+## 💡 Quick Commands
 
 ```bash
-# Install
+# Install & Setup
 npm install && npm rebuild better-sqlite3
+cp .env.example .env
+# Edit .env with JWT_SECRET
 
-# Run everything
-npm run dev:all
+# Development
+npm run dev:all          # Start everything
 
-# Run separately
-npm run server  # Backend on :3000
-npm run dev     # Frontend on :5173
+# Production
+npm run build            # Build frontend
+npm start                # Start server
 
-# Build
-npm run build
-
-# Lint & Format
-npm run lint
-npm run format
+# Maintenance
+npm run lint:fix         # Fix code issues
+npm run format           # Format code
 ```
 
 ---
 
 **Built with ❤️ using Claude Code**
 
-Version 6.0.0 | [View Implementation Guide](./IMPLEMENTATION.md)
+Version 6.0.1 | [Report Issues](https://github.com/your-repo/issues)

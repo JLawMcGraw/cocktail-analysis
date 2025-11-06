@@ -3,15 +3,18 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 
-// Debug: Check environment configuration on startup
-console.log('🔍 Environment check:');
-console.log('  NODE_ENV:', process.env.NODE_ENV || 'development');
-console.log('  PORT:', process.env.PORT || 3000);
-console.log('  ANTHROPIC_API_KEY exists?', !!process.env.ANTHROPIC_API_KEY);
-console.log('  ANTHROPIC_API_KEY valid format?', process.env.ANTHROPIC_API_KEY?.startsWith('sk-ant-') || false);
+// Environment check on startup
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔍 Environment check:');
+  console.log('  NODE_ENV:', process.env.NODE_ENV || 'development');
+  console.log('  PORT:', process.env.PORT || 3000);
+  console.log('  ANTHROPIC_API_KEY configured:', !!process.env.ANTHROPIC_API_KEY);
+}
 
 const { initializeDatabase } = require('./database/db.cjs');
+const { getCsrfToken, csrfProtection } = require('./middleware/csrf.cjs');
 const authRoutes = require('./routes/auth.cjs');
 const inventoryRoutes = require('./routes/inventory.cjs');
 const recipesRoutes = require('./routes/recipes.cjs');
@@ -32,9 +35,56 @@ const PORT = process.env.PORT || 3000;
 })();
 
 // Middleware
-app.use(helmet());
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+
+// HTTPS enforcement in production
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    // Check if request is secure (HTTPS)
+    // Trust proxy headers from Railway, Heroku, etc.
+    if (req.header('x-forwarded-proto') !== 'https') {
+      return res.redirect(301, `https://${req.header('host')}${req.url}`);
+    }
+    next();
+  });
+}
+
+// Security headers with Helmet
+app.use(helmet({
+  hsts: {
+    maxAge: 31536000, // 1 year in seconds
+    includeSubDomains: true,
+    preload: true
+  },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", 'data:', 'https:'],
+    },
+  },
+}));
+
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true, // Allow cookies
+}));
+
+// Cookie parser for CSRF tokens
+app.use(cookieParser());
+
+// Limit JSON body size to prevent DoS attacks
+// 1MB is generous for typical inventory/recipe data
+app.use(express.json({ limit: '1mb' }));
+
+// CSRF token endpoint (must be before CSRF protection)
+app.get('/api/csrf-token', getCsrfToken);
+
+// Apply CSRF protection to all state-changing API routes
+// Auth routes handle their own CSRF if needed
+app.use('/api/inventory', csrfProtection);
+app.use('/api/recipes', csrfProtection);
+app.use('/api/favorites', csrfProtection);
 
 // API Routes
 app.use('/auth', authRoutes);
@@ -47,9 +97,10 @@ app.post('/api/messages', async (req, res) => {
   // Use server-side API key from environment
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
-  console.log('🔍 DEBUG: API Key exists?', !!apiKey);
-  console.log('🔍 DEBUG: API Key length:', apiKey ? apiKey.length : 0);
-  console.log('🔍 DEBUG: API Key starts with:', apiKey ? apiKey.substring(0, 15) : 'N/A');
+  // Only log that API key is configured (development mode only)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 AI Proxy: API Key configured:', !!apiKey);
+  }
 
   if (!apiKey || apiKey === 'your-anthropic-api-key-here') {
     console.error('❌ AI Proxy: No API key configured on server');
