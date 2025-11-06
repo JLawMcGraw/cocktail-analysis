@@ -32,7 +32,7 @@
 npm install
 
 # 2. Rebuild SQLite bindings (IMPORTANT!)
-npm rebuild better-sqlite3
+npm rebuild sqlite3
 
 # 3. Configure environment
 cp .env.example .env
@@ -202,10 +202,13 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ### Server won't start
 ```bash
 # Rebuild SQLite bindings
-npm rebuild better-sqlite3
+npm rebuild sqlite3
 
 # Check .env file exists and has JWT_SECRET set
 cat .env
+
+# Generate secure JWT_SECRET if needed
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 ### Port already in use
@@ -252,10 +255,11 @@ See `server/middleware/README_CSRF.md` for full CSRF implementation guide.
 
 **Backend:**
 - Node.js + Express 4.18.2
-- SQLite (better-sqlite3 + sqlite3)
+- SQLite (sqlite3 - async callback-based)
 - JWT + bcrypt
 - Helmet (security headers)
 - express-rate-limit
+- Custom CSRF middleware
 
 **External APIs:**
 - Anthropic Claude API
@@ -264,9 +268,11 @@ See `server/middleware/README_CSRF.md` for full CSRF implementation guide.
 
 ## 📚 Documentation
 
-- **[SECURITY_FIXES.md](./SECURITY_FIXES.md)** - Security hardening details
+- **[SECURITY_FIXES.md](./SECURITY_FIXES.md)** - Security hardening details (v6.0.1)
+- **[MEDIUM_PRIORITY_FIXES.md](./MEDIUM_PRIORITY_FIXES.md)** - Performance & validation improvements
 - **[CHANGELOG.md](./CHANGELOG.md)** - Version history
 - **[server/middleware/README_CSRF.md](./server/middleware/README_CSRF.md)** - CSRF implementation guide
+- **[Documentation/](./Documentation/)** - Session history, project status, and dev notes
 
 ---
 
@@ -278,10 +284,10 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 ## 🙏 Acknowledgments
 
-- **Anthropic** - Claude API
-- **PapaParse** - CSV parsing
-- **better-sqlite3** - Fast SQLite
-- **Vite** - Build tool
+- **Anthropic** - Claude API for AI bartender
+- **PapaParse** - CSV parsing library
+- **sqlite3** - Database engine
+- **Vite** - Modern build tool
 
 ---
 
@@ -289,9 +295,9 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 ```bash
 # Install & Setup
-npm install && npm rebuild better-sqlite3
+npm install && npm rebuild sqlite3
 cp .env.example .env
-# Edit .env with JWT_SECRET
+# Edit .env with JWT_SECRET (use: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
 
 # Development
 npm run dev:all          # Start everything
