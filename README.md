@@ -268,11 +268,12 @@ See `server/middleware/README_CSRF.md` for full CSRF implementation guide.
 
 ## 📚 Documentation
 
+- **[RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md)** - Complete Railway deployment guide
 - **[SECURITY_FIXES.md](./SECURITY_FIXES.md)** - Security hardening details (v6.0.1)
 - **[MEDIUM_PRIORITY_FIXES.md](./MEDIUM_PRIORITY_FIXES.md)** - Performance & validation improvements
 - **[CHANGELOG.md](./CHANGELOG.md)** - Version history
 - **[server/middleware/README_CSRF.md](./server/middleware/README_CSRF.md)** - CSRF implementation guide
-- **[Documentation/](./Documentation/)** - Session history, project status, and dev notes
+- **[Documentation/](./Documentation/)** - Session history, project status, active tasks, and dev notes
 
 ---
 
@@ -313,6 +314,14 @@ npm run format           # Format code
 
 ---
 
+## 🌐 Production Deployment
+
+**Live App**: https://cocktail-analysis-production.up.railway.app
+
+See [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) for complete deployment instructions.
+
+---
+
 **Built with ❤️ using Claude Code**
 
-Version 6.0.1 | [Report Issues](https://github.com/your-repo/issues)
+Version 6.0.1 | Production Ready | [Report Issues](https://github.com/JLawMcGraw/cocktail-analysis/issues)

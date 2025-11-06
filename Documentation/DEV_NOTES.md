@@ -4,6 +4,51 @@ Technical decisions, gotchas, and lessons learned during development.
 
 ---
 
+## 2025-11-06 - Railway Deployment Configuration
+
+**Context**: Needed to deploy v6.0.1 to Railway production with all security features enabled and proper environment configuration.
+
+**Decision**: Created comprehensive Railway deployment guide and configured all required environment variables.
+
+**Details**:
+```bash
+# Required Railway Environment Variables
+JWT_SECRET=<64-char-hex-string>  # Generated with crypto.randomBytes(32)
+NODE_ENV=production
+FRONTEND_URL=https://cocktail-analysis-production.up.railway.app
+DATABASE_PATH=./server/database/cocktail-analyzer.db
+```
+
+**Result**: Successfully deployed to https://cocktail-analysis-production.up.railway.app with all v6.0.1 security features active.
+
+**Future Considerations**: Railway uses ephemeral filesystem storage - database resets on every deployment. Consider migrating to Railway PostgreSQL for persistent storage.
+
+---
+
+## 2025-11-06 - Temporary Admin API for Password Reset
+
+**Context**: User account existed in production but password was unknown, and no password reset flow was implemented.
+
+**Decision**: Created temporary admin API endpoint with secret key authentication to reset password, then removed it after use.
+
+**Result**: Successfully reset user password, then immediately removed admin routes from codebase.
+
+**Future Considerations**: Implement proper password reset flow with email verification and signed tokens with expiration.
+
+---
+
+## 2025-11-06 - Email Format Discovery Issue
+
+**Context**: User couldn't login - signup said "account exists" but login said "invalid credentials".
+
+**Problem**: User was trying `jacob.lawrence11@gmail.com` but database had `jacoblawrence11@gmail.com` (no dot).
+
+**Result**: Identified correct email via admin endpoint, reset password, user successfully logged in.
+
+**Future Considerations**: Gmail treats emails with/without dots as identical. Consider normalizing emails on signup (remove dots before @).
+
+---
+
 ## 2025-11-06 - JWT Secret Validation Strategy
 
 **Context**: Server was starting successfully even with hardcoded/default JWT secrets, creating a critical authentication bypass vulnerability (CVSS 9.8).

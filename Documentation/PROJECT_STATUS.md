@@ -3,10 +3,17 @@
 Last updated: 2025-11-06
 
 ## Current Phase
-**Production-Ready Development** - Core features complete with enterprise-grade security hardening
+**Production Deployed** - v6.0.1 live on Railway with full security hardening
 
 ## Current Version
-**v6.0.1** - Security-Hardened Release
+**v6.0.1** - Security-Hardened Production Release
+
+## Deployment Status
+- ✅ **Production URL**: https://cocktail-analysis-production.up.railway.app
+- ✅ **Railway Deployment**: Active and operational
+- ✅ **Environment Variables**: Configured (JWT_SECRET, FRONTEND_URL, NODE_ENV)
+- ✅ **Security Features**: All v6.0.1 features active in production
+- ⚠️ **Database**: Ephemeral storage (resets on redeploy)
 
 ## Implementation Status
 
