@@ -62,4 +62,30 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
+// List all users (for debugging)
+router.get('/list-users', async (req, res) => {
+  try {
+    const { adminSecret } = req.query;
+
+    const expectedSecret = process.env.ADMIN_SECRET || 'TEMP_ADMIN_SECRET_12345';
+
+    if (adminSecret !== expectedSecret) {
+      return res.status(403).json({ error: 'Invalid admin secret' });
+    }
+
+    const { dbAll } = require('../database/db.cjs');
+    const users = await dbAll('SELECT id, email, created_at FROM users', []);
+
+    res.json({
+      success: true,
+      count: users.length,
+      users: users
+    });
+
+  } catch (error) {
+    console.error('List users error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
