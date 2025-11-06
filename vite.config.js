@@ -20,7 +20,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@components': resolve(__dirname, 'src/components'),
+      '@features': resolve(__dirname, 'src/features'),
       '@services': resolve(__dirname, 'src/services'),
       '@utils': resolve(__dirname, 'src/utils'),
       '@styles': resolve(__dirname, 'src/styles'),
